@@ -1,0 +1,5 @@
+venv
+*.pyc
+*.env
+log.txt
+config.toml
