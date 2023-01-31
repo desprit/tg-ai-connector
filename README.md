@@ -23,24 +23,26 @@ pip install -r requirements.txt
 Sample `config.toml`:
 
 ```toml
-[telegram]
-BOT_TOKEN = "<YOUR_TELEGRAM_TOKEN>"
-ALLOWED_USERS = [<A_LIST_OF_ALLOWED_USERS>] # optional, a list of users from which messages are allowed
-ALLOWED_CHATS = [<A_LIST_OF_ALLOWED_CHATS>] # optional, a list of changes from which all messages are allowed
-
-[integrations]
-[openai]
-API_KEY = "<OPEN_AI_TOKEN>" # set it to enable OpenAI integration
-DALLE_COMMAND = "x" # optional, command to trigger Dall-E requests, default "d"
-CHATGPT_COMMAND = "y" # optional, command to trigger ChatGPT requests, default "p"
-[midjourney]
-API_KEY = "<REPLICATE_TOKEN>" # set it to enable Midjourney integration
-MIDJOURNEY_COMMAND = "z" # optional, command to trigger Midjourney requests, default "m"
+DEBUG = true
 
 [general]
-TEXT_HISTORY_SIZE = 10 # how many messages from each user to keep
 TEXT_HISTORY_TTL = 300 # for how long to store user messages, default 5 minutes
+TEXT_HISTORY_SIZE = 10 # how many messages from each user to keep
 IMAGE_HISTORY_TTL = 300 # for how long to store the last image from user, default 5 minutes
+
+[telegram]
+BOT_TOKEN = "YOUR_TELEGRAM_TOKEN"
+ALLOWED_USERS = [123, 234] # optional, a list of users from which messages are allowed
+ALLOWED_CHATS = [345, 456] # optional, a list of changes from which all messages are allowed
+
+[integrations]
+[integrations.openai]
+API_KEY = "OPEN_AI_TOKEN" # set it to enable OpenAI integration
+DALLE_COMMAND = "x" # optional, command to trigger Dall-E requests, default "d"
+CHATGPT_COMMAND = "y" # optional, command to trigger ChatGPT requests, default "p"
+[integrations.midjourney]
+API_KEY = "REPLICATE_TOKEN" # set it to enable Midjourney integration
+MIDJOURNEY_COMMAND = "z" # optional, command to trigger Midjourney requests, default "m"
 ```
 
 ## Running in development
