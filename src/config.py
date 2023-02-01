@@ -1,6 +1,6 @@
 import logging
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 from functools import lru_cache
 
 import toml
@@ -15,20 +15,27 @@ class OpenAIIntegration(BaseModel):
     CHATGPT_COMMAND: Optional[str]
 
 
-class MidjourneyIntegration(BaseModel):
+class ReplicateIntegration(BaseModel):
     API_KEY: str
     MIDJOURNEY_COMMAND: Optional[str]
+    STABLE_DIFFUSION_COMMAND: Optional[str]
 
 
 class Integrations(BaseModel):
     openai: Optional[OpenAIIntegration]
-    midjourney: Optional[MidjourneyIntegration]
+    replicate: Optional[ReplicateIntegration]
 
     @property
     def MIDJOURNEY_COMMAND(self) -> str:
-        if self.midjourney and self.midjourney.MIDJOURNEY_COMMAND:
-            return self.midjourney.MIDJOURNEY_COMMAND
+        if self.replicate and self.replicate.MIDJOURNEY_COMMAND:
+            return self.replicate.MIDJOURNEY_COMMAND
         return "m"
+
+    @property
+    def STABLE_DIFFUSION_COMMAND(self) -> str:
+        if self.replicate and self.replicate.MIDJOURNEY_COMMAND:
+            return self.replicate.MIDJOURNEY_COMMAND
+        return "s"
 
     @property
     def DALLE_COMMAND(self) -> str:

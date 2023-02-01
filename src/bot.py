@@ -6,9 +6,10 @@ from . import model
 from . import utils
 from . import store
 from . import config
-from .integrations import dalle
-from .integrations import chatgpt
-from .integrations import midjourney
+from .integrations.openai import get_gpt_response
+from .integrations.openai import get_dalle_response
+from .integrations.replicate import get_midjourney_response
+from .integrations.replicate import get_stable_diffusion_response
 
 
 logger = config.logger
@@ -45,7 +46,22 @@ def handle_midjourney_request(m: telebot.types.Message):
     Example:
     >>> /m A sunset on the beach
     """
-    response, error = midjourney.get_midjourney_response(m.text)
+    response, error = get_midjourney_response(m.text)
+    if error:
+        return bot.reply_to(m, error)
+    bot.send_photo(m.chat.id, response, reply_to_message_id=m.message_id)
+
+
+@bot.message_handler(
+    commands=[settings.integrations.STABLE_DIFFUSION_COMMAND], is_allowed=True
+)
+def handle_stable_diffusion_request(m: telebot.types.Message):
+    """
+    Stable Diffusion image generation requests handler.
+    Example:
+    >>> /s A sunset on the beach
+    """
+    response, error = get_stable_diffusion_response(m.text)
     if error:
         return bot.reply_to(m, error)
     bot.send_photo(m.chat.id, response, reply_to_message_id=m.message_id)
@@ -70,9 +86,9 @@ def handle_dalle_request(m: telebot.types.Message):
         previous_image = images_store.get_previous(unique_id)
         if not previous_image:
             return bot.reply_to(m, "No previous image to adjust")
-        response, error = dalle.get_dalle_response(text, previous_image.image_data)
+        response, error = get_dalle_response(text, previous_image.image_data)
     else:
-        response, error = dalle.get_dalle_response(m.text)
+        response, error = get_dalle_response(m.text)
     if error:
         return bot.reply_to(m, error)
 
@@ -98,7 +114,7 @@ def handle_chatgpt_request(m: telebot.types.Message):
         return bot.reply_to(m, "History cleared")
 
     history = messages_store.get(unique_id)
-    response, error = chatgpt.get_gpt_response(history, m.text)
+    response, error = get_gpt_response(history, m.text)
     if error:
         return bot.reply_to(m, error)
     history_entry = model.ChatHistoryEntry(m.text, m.date, response)

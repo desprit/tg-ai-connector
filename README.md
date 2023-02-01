@@ -13,8 +13,10 @@ pip install -r requirements.txt
 
 # Available integrations
 
-1. OpenAI through [Official API](https://beta.openai.com/docs/introduction)
-2. Midjourney through [Replicate](https://replicate.com/tstramer/midjourney-diffusion)
+1. Dall-E through [Official API](https://beta.openai.com/docs/introduction)
+2. ChatGPT through [Official API](https://beta.openai.com/docs/introduction)
+3. Midjourney through [Replicate](https://replicate.com/tstramer/midjourney-diffusion)
+4. Stable Diffusion through [Replicate](https://replicate.com/tstramer/midjourney-diffusion)
 
 # Usage
 
@@ -38,11 +40,12 @@ ALLOWED_CHATS = [345, 456] # optional, a list of changes from which all messages
 [integrations]
 [integrations.openai]
 API_KEY = "OPEN_AI_TOKEN" # set it to enable OpenAI integration
-DALLE_COMMAND = "x" # optional, command to trigger Dall-E requests, default "d"
-CHATGPT_COMMAND = "y" # optional, command to trigger ChatGPT requests, default "p"
-[integrations.midjourney]
+DALLE_COMMAND = "a" # optional, command to trigger Dall-E requests, default "d"
+CHATGPT_COMMAND = "b" # optional, command to trigger ChatGPT requests, default "p"
+[integrations.replicate]
 API_KEY = "REPLICATE_TOKEN" # set it to enable Midjourney integration
-MIDJOURNEY_COMMAND = "z" # optional, command to trigger Midjourney requests, default "m"
+MIDJOURNEY_COMMAND = "c" # optional, command to trigger Midjourney requests, default "m"
+STABLE_DIFFUSION_COMMAND = "d" # optional, command to trigger Stable Diffusion requests, default "s"
 ```
 
 ## Running in development
