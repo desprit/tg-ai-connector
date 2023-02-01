@@ -24,7 +24,8 @@ messages_store = store.MessagesStore()
 
 @bot.middleware_handler()
 def clean_message(_, update: telebot.types.Update):
-    update.message.cleaned = utils.clean_message_from_command(update.message.text)
+    if update.message:
+        update.message.cleaned = utils.clean_message_from_command(update.message.text)
 
 
 @bot.message_handler(commands=["start"], is_allowed=True)
