@@ -38,7 +38,9 @@ def allowed(user_id: int, chat_id: int) -> bool:
 def clean_message_from_command(text: str) -> str:
     """
     Remove command from message, example:
-    >>> clean_message_from_command("/petuh Hello")
+    >>> clean_message_from_command("/m Hello")
     "Hello"
     """
-    return REMOVE_COMMAND_RE.sub("", text).strip()
+    if isinstance(text, str):
+        return REMOVE_COMMAND_RE.sub("", text).strip()
+    return text

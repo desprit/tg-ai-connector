@@ -47,7 +47,7 @@ def handle_midjourney_request(m: telebot.types.Message):
     Example:
     >>> /m A sunset on the beach
     """
-    response, error = get_midjourney_response(m.text)
+    response, error = get_midjourney_response(m.cleaned)
     if error:
         return bot.reply_to(m, error)
     bot.send_photo(m.chat.id, response, reply_to_message_id=m.message_id)
@@ -62,7 +62,7 @@ def handle_stable_diffusion_request(m: telebot.types.Message):
     Example:
     >>> /s A sunset on the beach
     """
-    response, error = get_stable_diffusion_response(m.text)
+    response, error = get_stable_diffusion_response(m.cleaned)
     if error:
         return bot.reply_to(m, error)
     bot.send_photo(m.chat.id, response, reply_to_message_id=m.message_id)
@@ -82,19 +82,19 @@ def handle_dalle_request(m: telebot.types.Message):
     unique_id = f"{m.chat.id}:{m.chat.id}"
     images_store.clean_old_items(unique_id)
 
-    if "adjust" in m.text:
-        text = m.text.replace("adjust", "").strip()
+    if "adjust" in m.cleaned:
+        text = m.cleaned.replace("adjust", "").strip()
         previous_image = images_store.get_previous(unique_id)
         if not previous_image:
             return bot.reply_to(m, "No previous image to adjust")
         response, error = get_dalle_response(text, previous_image.image_data)
     else:
-        response, error = get_dalle_response(m.text)
+        response, error = get_dalle_response(m.cleaned)
     if error:
         return bot.reply_to(m, error)
 
     image_data = base64.b64decode(response)
-    history_entry = model.ImageHistoryEntry(m.text, m.date, image_data)
+    history_entry = model.ImageHistoryEntry(m.cleaned, m.date, image_data)
     images_store.add(unique_id, history_entry)
     bot.send_photo(m.chat.id, image_data, reply_to_message_id=m.message_id)
 
@@ -110,15 +110,15 @@ def handle_chatgpt_request(m: telebot.types.Message):
     """
     unique_id = f"{m.chat.id}:{m.chat.id}"
     messages_store.clean_old_items(unique_id)
-    if "clear" in m.text:
+    if "clear" in m.cleaned:
         images_store.clear(unique_id)
         return bot.reply_to(m, "History cleared")
 
     history = messages_store.get(unique_id)
-    response, error = get_gpt_response(history, m.text)
+    response, error = get_gpt_response(history, m.cleaned)
     if error:
         return bot.reply_to(m, error)
-    history_entry = model.ChatHistoryEntry(m.text, m.date, response)
+    history_entry = model.ChatHistoryEntry(m.cleaned, m.date, response)
     messages_store.add(unique_id, history_entry)
     bot.reply_to(m, response)
 

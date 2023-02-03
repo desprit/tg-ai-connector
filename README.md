@@ -87,3 +87,5 @@ OpenAI Dall-E supports image editing, to edit previous image type `adjust`:
 ```
 /d adjust Sun should be blue and stars should be green
 ```
+
+_Update Feb03_: "adjust" command doesn't work, it simply returns the same image again, maybe Dall-E requires mask file
