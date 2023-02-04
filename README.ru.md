@@ -22,10 +22,13 @@ pip install -r requirements.txt
 
 # Доступные интеграции
 
-1. Dall-E через [Official API](https://beta.openai.com/docs/introduction)
-2. ChatGPT через [Official API](https://beta.openai.com/docs/introduction)
-3. Midjourney через [Replicate](https://replicate.com/tstramer/midjourney-diffusion)
-4. Stable Diffusion через [Replicate](https://replicate.com/tstramer/midjourney-diffusion)
+1. OpenAI через [Official API](https://beta.openai.com/docs/introduction)
+   - Dall-E
+   - ChatGPT
+2. Replicate через [Replicate](https://replicate.com)
+   - Midjourney
+   - Stable Diffusion
+   - Other networks
 
 # Использование
 
@@ -34,26 +37,46 @@ pip install -r requirements.txt
 Пример `config.toml`:
 
 ```toml
-DEBUG = true
+debug = true
 
 [general]
-TEXT_HISTORY_TTL = 300 # как долго хранить сообщения от пользователя, 5 минут по умолчанию
-TEXT_HISTORY_SIZE = 10 # сколько сообщений хранить от каждого пользователя
+text_history_ttl = 300 # опционально, как долго хранить сообщения от пользователя, 5 минут по умолчанию
+text_history_size = 10 # опционально, сколько сообщений хранить от каждого пользователя, по умолчанию 10
 
 [telegram]
-BOT_TOKEN = "ТОКЕН_ОТ_ТЕЛЕГРАМ_БОТА"
-ALLOWED_USERS = [123, 234] # опционально, список пользователей, кому можно общаться с ботом
-ALLOWED_CHATS = [345, 456] # опционально, список чатов, откуда можно обращаться с ботом
+bot_token = "ТОКЕН_ОТ_ТЕЛЕГРАМ_БОТА"
+allowed_users = [123, 234] # опционально, список пользователей, кому можно общаться с ботом
+allowed_chats = [345, 456] # опционально, список чатов, откуда можно обращаться с ботом
 
 [integrations]
+
 [integrations.openai]
-API_KEY = "ТОКЕН_ОТ_OPENAI" # этот токен включает интеграцию с OpenAI
-DALLE_COMMAND = "a" # опционально, команда для взаимодействия с сеткой Dall-E, по умолчанию "d"
-CHATGPT_COMMAND = "b" # опционально, команда для взаимодействия с ChatGPT, по умолчанию "p"
+api_key = "OPEN_AI_TOKEN" # этот токен включает интеграцию с OpenAI
+[[integrations.openai.networks]]
+name = "chatgpt"
+command = "p" # Telegram команда для взаимодействия с ChatGPT
+[[integrations.openai.networks]]
+name = "dalle"
+command = "d" # Telegram команда для взаимодействия с сеткой Dall-E
+
 [integrations.replicate]
-API_KEY = "ТОКЕН_ОТ_REPLICATE" # этот токен включает интеграцию с Replicate
-MIDJOURNEY_COMMAND = "c" # опционально, команда для взаимодействия с сеткой Midjourney, по умолчанию "m"
-STABLE_DIFFUSION_COMMAND = "d" # опционально, команда для взаимодействия с сеткой Stable Diffusion, по умолчанию "s"
+api_key = "REPLICATE_TOKEN" # этот токен включает интеграцию с Replicate
+[[integrations.replicate.networks]]
+name = "tstramer/midjourney-diffusion"
+version = "436b051ebd8f68d23e83d22de5e198e0995357afef113768c20f0b6fcef23c8b"
+command = "m" # Telegram команда для взаимодействия с сеткой Midjourney
+[[integrations.replicate.networks]]
+name = "stability-ai/stable-diffusion"
+version = "f178fa7a1ae43a9a9af01b833b9d2ecf97b1bcb0acfd2b1c1c1c1c1c1c1c1c1c"
+command = "s" # Telegram команда для взаимодействия с сеткой Stable Diffusion
+[[integrations.replicate.networks]]
+name = "cjwbw/anything-v3.0"
+version = "f410ed4c6a0c3bf8b76747860b3a3c9e4c8b5a827a16eac9dd5ad9642edce9a2"
+command = "anything" # Telegram команда для взаимодействия с сеткой cjwbw/anything-v3.0
+[[integrations.replicate.networks]]
+name = "cjwbw/portraitplus"
+version = "629a9fe82c7979c1dab323aedac2c03adaae2e1aecf6be278a51fde0245e20a4"
+command = "portraitplus" # Telegram команда для взаимодействия с сеткой cjwbw/portraitplus
 ```
 
 ## Запуск в режиме разработки
@@ -79,12 +102,13 @@ make stop
 ```
 # Проверить, работает ли бот
 /ping
+# Показать список доступных команд
+/help
 ```
 
-Некоторые интеграции могут принимать команду `clear` для очистки истории:
+ChatGPT хранит историю запросов, ее можно очистить вручную используя команду `clear`:
 
 ```
-# Очистить историю сообщений с OpenAI ChatGPT
 /p clear
 ```
 
