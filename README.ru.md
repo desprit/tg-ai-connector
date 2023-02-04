@@ -3,106 +3,95 @@
 
 # Установка
 
-Python 3.10+ is required.
+Для работы нужен Python 3.10+.
 
 ```sh
-# Install system packages
+# Устанавить системные библиотеки
 apt install python3.10-dev python3.10-venv
 ```
 
 ```sh
-# Create Virtual environment
+# Создать виртуальное окружение
 python3.10 -m venv venv
-# Activate it
+# Активировать его
 source venv/bin/activate
-# Install dependencies
+# Устанавить зависимости
 pip install -r requirements.txt
 ```
 
-# Available integrations
+# Доступные интеграции
 
-1. Dall-E through [Official API](https://beta.openai.com/docs/introduction)
-2. ChatGPT through [Official API](https://beta.openai.com/docs/introduction)
-3. Midjourney through [Replicate](https://replicate.com/tstramer/midjourney-diffusion)
-4. Stable Diffusion through [Replicate](https://replicate.com/tstramer/midjourney-diffusion)
+1. Dall-E через [Official API](https://beta.openai.com/docs/introduction)
+2. ChatGPT через [Official API](https://beta.openai.com/docs/introduction)
+3. Midjourney через [Replicate](https://replicate.com/tstramer/midjourney-diffusion)
+4. Stable Diffusion через [Replicate](https://replicate.com/tstramer/midjourney-diffusion)
 
-# Usage
+# Использование
 
-## Config
+## Конфигурация
 
-Sample `config.toml`:
+Пример `config.toml`:
 
 ```toml
 DEBUG = true
 
 [general]
-TEXT_HISTORY_TTL = 300 # for how long to store user messages, default 5 minutes
-TEXT_HISTORY_SIZE = 10 # how many messages from each user to keep
-IMAGE_HISTORY_TTL = 300 # for how long to store the last image from user, default 5 minutes
+TEXT_HISTORY_TTL = 300 # как долго хранить сообщения от пользователя, 5 минут по умолчанию
+TEXT_HISTORY_SIZE = 10 # сколько сообщений хранить от каждого пользователя
 
 [telegram]
-BOT_TOKEN = "YOUR_TELEGRAM_TOKEN"
-ALLOWED_USERS = [123, 234] # optional, a list of users from which messages are allowed
-ALLOWED_CHATS = [345, 456] # optional, a list of changes from which all messages are allowed
+BOT_TOKEN = "ТОКЕН_ОТ_ТЕЛЕГРАМ_БОТА"
+ALLOWED_USERS = [123, 234] # опционально, список пользователей, кому можно общаться с ботом
+ALLOWED_CHATS = [345, 456] # опционально, список чатов, откуда можно обращаться с ботом
 
 [integrations]
 [integrations.openai]
-API_KEY = "OPEN_AI_TOKEN" # set it to enable OpenAI integration
-DALLE_COMMAND = "a" # optional, command to trigger Dall-E requests, default "d"
-CHATGPT_COMMAND = "b" # optional, command to trigger ChatGPT requests, default "p"
+API_KEY = "ТОКЕН_ОТ_OPENAI" # этот токен включает интеграцию с OpenAI
+DALLE_COMMAND = "a" # опционально, команда для взаимодействия с сеткой Dall-E, по умолчанию "d"
+CHATGPT_COMMAND = "b" # опционально, команда для взаимодействия с ChatGPT, по умолчанию "p"
 [integrations.replicate]
-API_KEY = "REPLICATE_TOKEN" # set it to enable Midjourney integration
-MIDJOURNEY_COMMAND = "c" # optional, command to trigger Midjourney requests, default "m"
-STABLE_DIFFUSION_COMMAND = "d" # optional, command to trigger Stable Diffusion requests, default "s"
+API_KEY = "ТОКЕН_ОТ_REPLICATE" # этот токен включает интеграцию с Replicate
+MIDJOURNEY_COMMAND = "c" # опционально, команда для взаимодействия с сеткой Midjourney, по умолчанию "m"
+STABLE_DIFFUSION_COMMAND = "d" # опционально, команда для взаимодействия с сеткой Stable Diffusion, по умолчанию "s"
 ```
 
-## Running in development
+## Запуск в режиме разработки
 
 ```sh
-# Start bot
+# Запуск бота
 make start
-# Check logs
+# Проверка логов
 tail -f log.txt
 ```
 
-## Running on the server
+## Запуск на сервере
 
 ```sh
-# Start bot
+# Запуск бота
 python -m src.bot &
-# Stop bot
+# Остановка бота
 make stop
 ```
 
-## Useful Telegram commands
+## Полезные команды в Телеграм
 
 ```
-# Test bot is alive
+# Проверить, работает ли бот
 /ping
 ```
 
-Integrations that store requests and responses in history also support a `clear` command to clean the state.
+Некоторые интеграции могут принимать команду `clear` для очистки истории:
 
 ```
-# Clear previous image from OpenAI Dall-E integration
-/d clear
-# Clear history of previous messages from OpenAI ChatGPT integration
+# Очистить историю сообщений с OpenAI ChatGPT
 /p clear
 ```
 
-OpenAI Dall-E supports image editing, to edit previous image type `adjust`:
-
-```
-/d adjust Sun should be blue and stars should be green
-```
-
-_Update Feb03_: "adjust" command doesn't work, it simply returns the same image again, maybe Dall-E requires mask file
-
-## Troubleshooting
+## Возможные ошибки и неполадки
 
 - A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
 
-You have another bot running on the background. Stop it with `make stop`, if it doesn't work find that process and kill it manually:
+Скорее всего, бот уже работает. Остановите его командой `make stop`, если это не сработало, вручную найдите процесс и остановите его:
 
 ```sh
 ps aux | grep "src.bot"
