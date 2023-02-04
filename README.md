@@ -22,39 +22,64 @@ pip install -r requirements.txt
 
 # Available integrations
 
-1. Dall-E through [Official API](https://beta.openai.com/docs/introduction)
-2. ChatGPT through [Official API](https://beta.openai.com/docs/introduction)
-3. Midjourney through [Replicate](https://replicate.com/tstramer/midjourney-diffusion)
-4. Stable Diffusion through [Replicate](https://replicate.com/tstramer/midjourney-diffusion)
+1. OpenAI through [Official API](https://beta.openai.com/docs/introduction)
+   - Dall-E
+   - ChatGPT
+2. Replicate through [Replicate](https://replicate.com)
+   - Midjourney
+   - Stable Diffusion
+   - Other networks
 
 # Usage
 
 ## Config
 
-Sample `config.toml`:
+Create `config.toml`, fill `YOUR_TELEGRAM_TOKEN` and tokens for integrations:
 
 ```toml
-DEBUG = true
+debug = true
 
 [general]
-TEXT_HISTORY_TTL = 300 # for how long to store user messages, default 5 minutes
-TEXT_HISTORY_SIZE = 10 # how many messages from each user to keep
+text_history_ttl = 300 # optional, for how long to store user messages, default 5 minutes
+text_history_size = 10 # optional, how many messages from each user to keep
 
 [telegram]
-BOT_TOKEN = "YOUR_TELEGRAM_TOKEN"
-ALLOWED_USERS = [123, 234] # optional, a list of users from which messages are allowed
-ALLOWED_CHATS = [345, 456] # optional, a list of changes from which all messages are allowed
+bot_token = "YOUR_TELEGRAM_TOKEN"
+allowed_users = [123, 234] # optional, a list of users from which messages are allowed
+allowed_chats = [345, 456] # optional, a list of changes from which all messages are allowed
 
 [integrations]
+
 [integrations.openai]
-API_KEY = "OPEN_AI_TOKEN" # set it to enable OpenAI integration
-DALLE_COMMAND = "a" # optional, command to trigger Dall-E requests, default "d"
-CHATGPT_COMMAND = "b" # optional, command to trigger ChatGPT requests, default "p"
+api_key = "OPEN_AI_TOKEN" # set it to enable OpenAI integration
+[[integrations.openai.networks]]
+name = "chatgpt"
+command = "p" # Telegram command to trigger ChatGPT requests
+[[integrations.openai.networks]]
+name = "dalle"
+command = "d" # Telegram command to trigger Dall-E requests
+
 [integrations.replicate]
-API_KEY = "REPLICATE_TOKEN" # set it to enable Midjourney integration
-MIDJOURNEY_COMMAND = "c" # optional, command to trigger Midjourney requests, default "m"
-STABLE_DIFFUSION_COMMAND = "d" # optional, command to trigger Stable Diffusion requests, default "s"
+api_key = "REPLICATE_TOKEN" # set it to enable Replicate integration
+[[integrations.replicate.networks]]
+name = "tstramer/midjourney-diffusion"
+version = "436b051ebd8f68d23e83d22de5e198e0995357afef113768c20f0b6fcef23c8b"
+command = "m" # Telegram command to trigger Midjourney requests
+[[integrations.replicate.networks]]
+name = "stability-ai/stable-diffusion"
+version = "f178fa7a1ae43a9a9af01b833b9d2ecf97b1bcb0acfd2b1c1c1c1c1c1c1c1c1c"
+command = "s" # Telegram command to trigger Stable Diffusion requests
+[[integrations.replicate.networks]]
+name = "cjwbw/anything-v3.0"
+version = "f410ed4c6a0c3bf8b76747860b3a3c9e4c8b5a827a16eac9dd5ad9642edce9a2"
+command = "anything" # Telegram command to trigger requests to cjwbw/anything-v3.0
+[[integrations.replicate.networks]]
+name = "cjwbw/portraitplus"
+version = "629a9fe82c7979c1dab323aedac2c03adaae2e1aecf6be278a51fde0245e20a4"
+command = "portraitplus" # Telegram command to trigger requests to cjwbw/portraitplus
 ```
+
+Explore Replicate [website](https://replicate.com/explore) to find more models.
 
 ## Running in development
 
@@ -79,12 +104,13 @@ make stop
 ```
 # Test bot is alive
 /ping
+# Show available commands
+/help
 ```
 
-Integrations that store requests and responses in history also support a `clear` command to clean the state.
+ChatGPT stores history of requests which can be manually cleaned using `clear` command.
 
 ```
-# Clear history of previous messages from OpenAI ChatGPT integration
 /p clear
 ```
 

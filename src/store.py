@@ -1,7 +1,4 @@
 import time
-from typing import Dict
-from typing import List
-from typing import Optional
 
 from . import model
 from . import config
@@ -12,7 +9,7 @@ settings = config.get_settings()
 class Store:
     ttl: int
     limit: int = 1
-    items: Dict[str, List[model.HistoryEntry]]
+    items: dict[str, list[model.HistoryEntry]]
 
     def __init__(self):
         self.items = {}
@@ -22,7 +19,7 @@ class Store:
             self.items[key] = []
         self.items[key].append(value)
 
-    def get(self, key: str) -> List[model.HistoryEntry]:
+    def get(self, key: str) -> list[model.HistoryEntry]:
         return self.items.get(key, [])
 
     def clean_old_items(self, key: str):
@@ -37,14 +34,5 @@ class Store:
 
 
 class MessagesStore(Store):
-    ttl = settings.general.TEXT_HISTORY_TTL
-    limit = settings.general.TEXT_HISTORY_SIZE
-
-
-class ImagesStore(Store):
-    ttl = settings.general.IMAGE_HISTORY_TTL
-
-    def get_previous(self, key: str) -> Optional[model.ImageHistoryEntry]:
-        if len(self.get(key)) == 0:
-            return None
-        return self.get(key)[-1]
+    ttl = settings.general.text_history_ttl
+    limit = settings.general.text_history_size
