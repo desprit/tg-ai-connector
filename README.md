@@ -1,6 +1,14 @@
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/desprit/tg-ai-connector/blob/master/README.md)
+[![ru](https://img.shields.io/badge/lang-ru-blue.svg)](https://github.com/desprit/tg-ai-connector/blob/master/README.ru.md)
+
 # Installation
 
 Python 3.10+ is required.
+
+```sh
+# Install system packages
+apt install python3.10-dev python3.10-venv
+```
 
 ```sh
 # Create Virtual environment
@@ -30,7 +38,6 @@ DEBUG = true
 [general]
 TEXT_HISTORY_TTL = 300 # for how long to store user messages, default 5 minutes
 TEXT_HISTORY_SIZE = 10 # how many messages from each user to keep
-IMAGE_HISTORY_TTL = 300 # for how long to store the last image from user, default 5 minutes
 
 [telegram]
 BOT_TOKEN = "YOUR_TELEGRAM_TOKEN"
@@ -76,19 +83,9 @@ make stop
 Integrations that store requests and responses in history also support a `clear` command to clean the state.
 
 ```
-# Clear previous image from OpenAI Dall-E integration
-/d clear
 # Clear history of previous messages from OpenAI ChatGPT integration
 /p clear
 ```
-
-OpenAI Dall-E supports image editing, to edit previous image type `adjust`:
-
-```
-/d adjust Sun should be blue and stars should be green
-```
-
-_Update Feb03_: "adjust" command doesn't work, it simply returns the same image again, maybe Dall-E requires mask file
 
 ## Troubleshooting
 
