@@ -111,7 +111,7 @@ def handle_chatgpt_request(m: telebot.types.Message):
     unique_id = f"{m.chat.id}:{m.chat.id}"
     messages_store.clean_old_items(unique_id)
     if "clear" in m.cleaned:
-        images_store.clear(unique_id)
+        messages_store.clear(unique_id)
         return bot.reply_to(m, "History cleared")
 
     history = messages_store.get(unique_id)
