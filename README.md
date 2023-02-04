@@ -89,3 +89,14 @@ OpenAI Dall-E supports image editing, to edit previous image type `adjust`:
 ```
 
 _Update Feb03_: "adjust" command doesn't work, it simply returns the same image again, maybe Dall-E requires mask file
+
+## Troubleshooting
+
+- A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+
+You have another bot running on the background. Stop it with `make stop`, if it doesn't work find that process and kill it manually:
+
+```sh
+ps aux | grep "src.bot"
+kill -9 <PID>
+```
