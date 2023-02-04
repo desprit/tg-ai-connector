@@ -1,7 +1,6 @@
 black
 fastapi
 openai
-pillow
 pyTelegramBotAPI
 replicate
 toml
