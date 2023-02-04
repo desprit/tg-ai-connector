@@ -45,7 +45,8 @@ def get_command(text: str) -> str:
     "m"
     """
     if isinstance(text, str):
-        return COMMAND_RE.findall(text)[0].strip().lstrip("/")
+        commands = COMMAND_RE.findall(text)
+        return commands[0].strip().lstrip("/") if commands else ""
     return text
 
 
