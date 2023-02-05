@@ -20,8 +20,11 @@ def get_replicate_response(
 ) -> Tuple[str, Optional[str]]:
     if not text:
         return "", "No text provided"
-    model = replicate.models.get(cfg.name)
-    version = model.versions.get(cfg.version)
+    try:
+        model = replicate.models.get(cfg.name)
+        version = model.versions.get(cfg.version)
+    except Exception as e:
+        return "", f"Error while initializing Replicate model: {e}"
     inputs = {
         "prompt": text,
         "width": 768,
