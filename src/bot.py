@@ -13,7 +13,7 @@ from .integrations.replicate import get_replicate_response
 logger = config.logger
 settings = config.get_settings()
 telebot.apihelper.ENABLE_MIDDLEWARE = True
-bot = telebot.TeleBot(settings.telegram.bot_token, parse_mode="HTML")
+bot = telebot.TeleBot(settings.telegram.bot_token)
 bot.add_custom_filter(utils.IsAllowed())
 messages_store = store.MessagesStore()
 
@@ -41,7 +41,7 @@ def handle_ping(m: telebot.types.Message):
 @bot.message_handler(commands=["help"], is_allowed=True)
 def handle_help(m: telebot.types.Message):
     message = utils.get_list_of_commands()
-    bot.reply_to(m, message)
+    bot.reply_to(m, message, parse_mode="HTML")
 
 
 def handle_replicate_request(m: telebot.types.Message):
