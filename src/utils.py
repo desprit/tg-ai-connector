@@ -4,6 +4,7 @@ from typing import Optional
 import telebot
 
 from . import model
+from . import store
 from . import config
 
 logger = config.logger
@@ -18,24 +19,53 @@ class IsAllowed(telebot.custom_filters.SimpleCustomFilter):
 
     @staticmethod
     def check(m: telebot.types.Message):
-        is_allowed = allowed(m.from_user.id, m.chat.id)
-        if not is_allowed:
+        chat_id = m.chat.id
+        user_id = m.from_user.id
+        username = m.from_user.username
+        if settings.debug:
+            logger.debug(f">>> Message received from user {user_id}, chat {chat_id}")
+        is_allowed_config = allowed_config(m.from_user.id, m.chat.id)
+        is_allowed_whitelist = allowed_whitelist(m.from_user.id, m.chat.id, username)
+        if not is_allowed_config and not is_allowed_whitelist:
             logger.warn(
                 f">>> Message from user {m.from_user.id}, chat {m.chat.id} was blocked"
             )
-        return is_allowed
+        return is_allowed_config or is_allowed_whitelist
 
 
-def allowed(user_id: int, chat_id: int) -> bool:
-    if settings.debug:
-        logger.debug(f">>> Message received from user {user_id}, chat {chat_id}")
+class IsAdmin(telebot.custom_filters.SimpleCustomFilter):
+    key = "is_admin"
+
+    @staticmethod
+    def check(m: telebot.types.Message):
+        is_admin = m.from_user.id == settings.telegram.admin_id
+        if not is_admin:
+            logger.warn(
+                f">>> Non-admin user {m.from_user.id} tried to use whitelist command, blocked"
+            )
+        return is_admin
+
+
+def allowed_config(user_id: int, chat_id: int) -> bool:
     allowed = (
         user_id in settings.telegram.allowed_users
         or chat_id in settings.telegram.allowed_chats
+        or user_id == settings.telegram.admin_id
     )
-    if not allowed:
-        return False
-    return True
+    if allowed:
+        return True
+    return False
+
+
+def allowed_whitelist(user_id: int, chat_id: int, username: str) -> bool:
+    whitelist_store = store.WhitelistStore.get_instance()
+    if whitelist_store.is_whitelisted(user_id):
+        return True
+    if whitelist_store.is_whitelisted(chat_id):
+        return True
+    if whitelist_store.is_whitelisted(username.lower()):
+        return True
+    return False
 
 
 def get_command(text: str) -> str:
