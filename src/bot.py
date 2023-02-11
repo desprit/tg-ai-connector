@@ -12,10 +12,13 @@ from .integrations.replicate import get_replicate_response
 
 logger = config.logger
 settings = config.get_settings()
+messages_store = store.MessagesStore.get_instance()
+whitelist_store = store.WhitelistStore.get_instance()
+
 telebot.apihelper.ENABLE_MIDDLEWARE = True
 bot = telebot.TeleBot(settings.telegram.bot_token)
+bot.add_custom_filter(utils.IsAdmin())
 bot.add_custom_filter(utils.IsAllowed())
-messages_store = store.MessagesStore()
 
 
 @bot.middleware_handler()
@@ -42,6 +45,34 @@ def handle_ping(m: telebot.types.Message):
 def handle_help(m: telebot.types.Message):
     message = utils.get_list_of_commands()
     bot.reply_to(m, message, parse_mode="HTML")
+
+
+@bot.message_handler(commands=["whitelist"], is_admin=True)
+def handle_whitelist(m: telebot.types.Message):
+    """
+    Add user or chat to whitelist. Requires admin privileges.
+    """
+    if not m.cleaned:
+        return bot.reply_to(m, "Please specify user id, username or chat id ")
+    entry = m.cleaned.split(" ")[0]
+    error = whitelist_store.whitelist(entry)
+    if error:
+        return bot.reply_to(m, error)
+    bot.reply_to(m, f"Added {entry} to whitelist")
+
+
+@bot.message_handler(commands=["blacklist"], is_admin=True)
+def handle_blacklist(m: telebot.types.Message):
+    """
+    Block user or chat. Requires admin privileges.
+    """
+    if not m.cleaned:
+        return bot.reply_to(m, "Please specify user id, username or chat id ")
+    entry = m.cleaned.split(" ")[0]
+    error = whitelist_store.blacklist(entry)
+    if error:
+        return bot.reply_to(m, error)
+    bot.reply_to(m, f"Removed {entry} from whitelist")
 
 
 def handle_replicate_request(m: telebot.types.Message):

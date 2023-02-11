@@ -32,6 +32,19 @@ pip install -r requirements.txt
 
 # Usage
 
+## Authorization
+
+You can whitelist/blacklist users and chats via the config file. Alternatively, set the admin_id and then use bot commands:
+
+```sh
+/whitelist user_id
+/whitelist username
+/whitelist chat_id
+/blacklist user_id
+/blacklist username
+/blacklist chat_id
+```
+
 ## Config
 
 Create `config.toml`, fill `YOUR_TELEGRAM_TOKEN` and tokens for integrations:
@@ -45,6 +58,7 @@ text_history_size = 10 # optional, how many messages from each user to keep
 
 [telegram]
 bot_token = "YOUR_TELEGRAM_TOKEN"
+admin_id = 111 # optional, id of admin user who can whitelist and blacklist chats and users
 allowed_users = [123, 234] # optional, a list of users from which messages are allowed
 allowed_chats = [345, 456] # optional, a list of changes from which all messages are allowed
 

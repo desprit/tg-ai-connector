@@ -55,6 +55,7 @@ class Integrations(BaseModel):
 
 class TelegramSettings(BaseModel):
     bot_token: str
+    admin_id: Optional[int]
     allowed_users: list[int] = []
     allowed_chats: list[int] = []
 
