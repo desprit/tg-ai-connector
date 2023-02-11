@@ -113,6 +113,11 @@ def get_list_of_commands() -> str:
     commands = [
         ["help", "Show help message"],
         ["ping", "Check if bot is alive"],
+        ["whitelist [<user_id>|<username>|<chat_id>]", "Add user or chat to whitelist"],
+        [
+            "blacklist [<user_id>|<username>|<chat_id>]",
+            "Remove user or chat from whitelist",
+        ],
     ]
     if settings.integrations.replicate:
         for network in settings.integrations.replicate.networks:
