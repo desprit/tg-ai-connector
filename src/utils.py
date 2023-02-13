@@ -21,7 +21,7 @@ class IsAllowed(telebot.custom_filters.SimpleCustomFilter):
     def check(m: telebot.types.Message):
         chat_id = m.chat.id
         user_id = m.from_user.id
-        username = m.from_user.username
+        username = m.from_user.username  # can be None
         if settings.debug:
             logger.debug(f">>> Message received from user {user_id}, chat {chat_id}")
         is_allowed_config = allowed_config(m.from_user.id, m.chat.id)
@@ -57,13 +57,13 @@ def allowed_config(user_id: int, chat_id: int) -> bool:
     return False
 
 
-def allowed_whitelist(user_id: int, chat_id: int, username: str) -> bool:
+def allowed_whitelist(user_id: int, chat_id: int, username: Optional[str]) -> bool:
     whitelist_store = store.WhitelistStore.get_instance()
     if whitelist_store.is_whitelisted(user_id):
         return True
     if whitelist_store.is_whitelisted(chat_id):
         return True
-    if whitelist_store.is_whitelisted(username.lower()):
+    if username and whitelist_store.is_whitelisted(username.lower()):
         return True
     return False
 
@@ -106,16 +106,20 @@ def find_config_by_command(cmd: str) -> Optional[model.Network]:
     return None
 
 
-def get_list_of_commands() -> str:
+def get_list_of_commands(user_id: int) -> str:
     """
     Return list of commands supported by the bot.
     """
     commands = [
         ["help", "Show help message"],
         ["ping", "Check if bot is alive"],
+    ]
+    admin_commands = [
         ["whitelist [user_id|username|chat_id]", "Add user or chat to whitelist"],
         ["blacklist [user_id|username|chat_id]", "Remove user or chat from whitelist"],
     ]
+    if user_id == settings.telegram.admin_id:
+        commands.extend(admin_commands)
     if settings.integrations.replicate:
         for network in settings.integrations.replicate.networks:
             commands.append(

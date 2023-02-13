@@ -43,7 +43,7 @@ def handle_ping(m: telebot.types.Message):
 
 @bot.message_handler(commands=["help"], is_allowed=True)
 def handle_help(m: telebot.types.Message):
-    message = utils.get_list_of_commands()
+    message = utils.get_list_of_commands(m.from_user.id)
     bot.reply_to(m, message, parse_mode="HTML")
 
 
