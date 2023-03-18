@@ -41,9 +41,9 @@ def get_replicate_image_response(
     for _ in range(2):
         try:
             if settings.debug:
-                logger.debug(f">>> Replicate request: {text}")
+                logger.debug(f">>> Replicate image request for: {text}")
             output = version.predict(**inputs)
-            logger.debug(f">>> Replicate response: {output}")
+            logger.debug(f">>> Replicate image response: {output}")
         except replicate.exceptions.ReplicateError as e:
             time.sleep(1)
         except Exception as e:
@@ -74,11 +74,11 @@ def get_replicate_audio_response(
             if settings.debug:
                 logger.debug(f">>> Replicate audio request")
             output = version.predict(**inputs)
-            logger.debug(f">>> Replicate response: {output}")
+            logger.debug(f">>> Replicate audio response: {output}")
         except replicate.exceptions.ReplicateError as e:
             time.sleep(1)
         except Exception as e:
-            return "", f"Error while getting image: {e}"
+            return "", f"Error while getting audio: {e}"
         break
     if not output:
         return "", "Error while getting audio response"

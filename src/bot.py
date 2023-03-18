@@ -87,22 +87,28 @@ def handle_replicate_request(m: telebot.types.Message):
     cfg = utils.find_config_by_command(m.command)
     if not cfg:
         return bot.reply_to(m, "Unknown command")
-    if m.reply_to_message and m.reply_to_message.voice:
-        file_info = bot.get_file(m.reply_to_message.voice.file_id)
-        file = requests.get(
-            "https://api.telegram.org/file/bot{0}/{1}".format(
-                settings.telegram.bot_token, file_info.file_path
+    if cfg.type == "audio":
+        if m.reply_to_message and m.reply_to_message.voice:
+            file_info = bot.get_file(m.reply_to_message.voice.file_id)
+            file = requests.get(
+                "https://api.telegram.org/file/bot{0}/{1}".format(
+                    settings.telegram.bot_token, file_info.file_path
+                )
             )
-        )
-        response, error = get_replicate_audio_response(file.content, m.cleaned, cfg)
+            response, error = get_replicate_audio_response(file.content, m.cleaned, cfg)
+            if error:
+                return bot.reply_to(m, error)
+            bot.reply_to(m, response)
+            return
+        bot.reply_to(m, "No voice attachment found")
+        return
+    if cfg.type == "image":
+        response, error = get_replicate_image_response(m.cleaned, cfg)
         if error:
             return bot.reply_to(m, error)
-        bot.reply_to(m, response)
+        bot.send_photo(m.chat.id, response, reply_to_message_id=m.message_id)
         return
-    response, error = get_replicate_image_response(m.cleaned, cfg)
-    if error:
-        return bot.reply_to(m, error)
-    bot.send_photo(m.chat.id, response, reply_to_message_id=m.message_id)
+    bot.reply_to(m, "Unknown command type")
 
 
 def handle_dalle_request(m: telebot.types.Message):

@@ -61,7 +61,7 @@ class OpenAIIntegration(BaseModel):
 
 
 class ReplicateNetwork(Network):
-    ...
+    type: str
 
 
 class ReplicateIntegration(BaseModel):

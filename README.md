@@ -33,6 +33,9 @@ pip install -r requirements.txt
 
 Relicate offers many different networks. Initially I was only using image generation but recently discovered a [text-to-speech network](https://replicate.com/openai/whisper/api). Since you need to provide an audio to it, the easiest way I found is to use "reply" in your Telegram chat. Basically you select an audio message, reply to it with `/a` command (or whatever command you chose for the `openai/whisper` integration) and optionally provide language, for example `/a de`.
 
+You may also need to change Bot Privacy settings:
+https://stackoverflow.com/questions/50204633/allow-bot-to-access-telegram-group-messages
+
 # Usage
 
 ## Authorization
@@ -88,22 +91,27 @@ api_key = "REPLICATE_TOKEN" # set it to enable Replicate integration
 name = "tstramer/midjourney-diffusion"
 version = "436b051ebd8f68d23e83d22de5e198e0995357afef113768c20f0b6fcef23c8b"
 command = "m" # Telegram command to trigger Midjourney requests
+type = "image"
 [[integrations.replicate.networks]]
 name = "stability-ai/stable-diffusion"
 version = "f178fa7a1ae43a9a9af01b833b9d2ecf97b1bcb0acfd2b1c1c1c1c1c1c1c1c1c"
 command = "s" # Telegram command to trigger Stable Diffusion requests
+type = "image"
 [[integrations.replicate.networks]]
 name = "cjwbw/anything-v3.0"
 version = "f410ed4c6a0c3bf8b76747860b3a3c9e4c8b5a827a16eac9dd5ad9642edce9a2"
 command = "anything" # Telegram command to trigger requests to cjwbw/anything-v3.0
+type = "image"
 [[integrations.replicate.networks]]
 name = "cjwbw/portraitplus"
 version = "629a9fe82c7979c1dab323aedac2c03adaae2e1aecf6be278a51fde0245e20a4"
 command = "portraitplus" # Telegram command to trigger requests to cjwbw/portraitplus
+type = "image"
 [[integrations.replicate.networks]]
 name = "openai/whisper"
 version = "e39e354773466b955265e969568deb7da217804d8e771ea8c9cd0cef6591f8bc" # Telegram command to trigger requests to openai/whisper text-to-speech model
 command = "a"
+type = "audio"
 ```
 
 Explore Replicate [website](https://replicate.com/explore) to find more models.
