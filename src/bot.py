@@ -78,9 +78,22 @@ def handle_blacklist(m: telebot.types.Message):
     bot.reply_to(m, f"Removed {entry} from whitelist")
 
 
+def get_audio_file(file_id: str) -> bytes:
+    """
+    Download audio file from the message.
+    """
+    file_info = bot.get_file(file_id)
+    file = requests.get(
+        "https://api.telegram.org/file/bot{0}/{1}".format(
+            settings.telegram.bot_token, file_info.file_path
+        )
+    )
+    return file
+
+
 def handle_replicate_request(m: telebot.types.Message):
     """
-    Image generation and text-to-speech decode using Replicate API.
+    Image generation and voice-to-text decode using Replicate API.
     Example:
     >>> /m A sunset on the beach
     """
@@ -89,12 +102,7 @@ def handle_replicate_request(m: telebot.types.Message):
         return bot.reply_to(m, "Unknown command")
     if cfg.type == "audio":
         if m.reply_to_message and m.reply_to_message.voice:
-            file_info = bot.get_file(m.reply_to_message.voice.file_id)
-            file = requests.get(
-                "https://api.telegram.org/file/bot{0}/{1}".format(
-                    settings.telegram.bot_token, file_info.file_path
-                )
-            )
+            file = get_audio_file(m.reply_to_message.voice.file_id)
             response, error = get_replicate_audio_response(file.content, m.cleaned, cfg)
             if error:
                 return bot.reply_to(m, error)
@@ -177,6 +185,27 @@ def handle_chat_request(m: telebot.types.Message):
     bot.reply_to(m, response)
 
 
+def handle_voice_message(m: telebot.types.Message):
+    """
+    Handler to automatically convert voice messages to text.
+    Should not get triggered if message starts with a command.
+    """
+    if m.text and m.text.startswith("/"):
+        return
+    cfg = utils.find_config_by_type("audio")
+    if not cfg:
+        return bot.reply_to(m, "Network to process audio not found")
+    msg = bot.reply_to(m, "Generating text...")
+    file = get_audio_file(m.voice.file_id)
+    response, error = get_replicate_audio_response(file.content, "", cfg)
+    if error:
+        bot.edit_message_text(
+            "Couldn't generate text", chat_id=m.chat.id, message_id=msg.id
+        )
+        return bot.reply_to(m, error)
+    bot.edit_message_text(response, chat_id=m.chat.id, message_id=msg.id)
+
+
 """
 Initialize handlers for integrations listed in configuration file.
 """
@@ -208,6 +237,14 @@ if settings.integrations.openai:
         bot.register_message_handler(
             handle_completion_request, commands=[completion_cmd], is_allowed=True
         )
+
+
+"""
+Register global handlers.
+"""
+
+if settings.install_global_handlers:
+    bot.register_message_handler(handle_voice_message, content_types=["voice"])
 
 
 logger.info(">>> Started polling")

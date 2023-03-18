@@ -31,7 +31,7 @@ pip install -r requirements.txt
    - Stable Diffusion
    - Other networks
 
-Relicate offers many different networks. Initially I was only using image generation but recently discovered a [text-to-speech network](https://replicate.com/openai/whisper/api). Since you need to provide an audio to it, the easiest way I found is to use "reply" in your Telegram chat. Basically you select an audio message, reply to it with `/a` command (or whatever command you chose for the `openai/whisper` integration) and optionally provide language, for example `/a de`.
+Relicate offers many different networks. Initially I was only using image generation but recently discovered a [speech-to-text network](https://replicate.com/openai/whisper/api). Since you need to provide an audio to it, the easiest way I found is to use "reply" in your Telegram chat. Basically you select an audio message, reply to it with `/a` command (or whatever command you chose for the `openai/whisper` integration) and optionally provide language, for example `/a de`.
 
 You may also need to change Bot Privacy settings:
 https://stackoverflow.com/questions/50204633/allow-bot-to-access-telegram-group-messages
@@ -109,7 +109,7 @@ command = "portraitplus" # Telegram command to trigger requests to cjwbw/portrai
 type = "image"
 [[integrations.replicate.networks]]
 name = "openai/whisper"
-version = "e39e354773466b955265e969568deb7da217804d8e771ea8c9cd0cef6591f8bc" # Telegram command to trigger requests to openai/whisper text-to-speech model
+version = "e39e354773466b955265e969568deb7da217804d8e771ea8c9cd0cef6591f8bc" # Telegram command to trigger requests to openai/whisper speech-to-text model
 command = "a"
 type = "audio"
 ```

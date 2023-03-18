@@ -106,6 +106,17 @@ def find_config_by_command(cmd: str) -> Optional[Type[model.Network]]:
     return None
 
 
+def find_config_by_type(cmd_type: str) -> Optional[Type[model.Network]]:
+    """
+    Search ReplicateNetworks and OpenAiNetworks for the one that matches the given type.
+    """
+    if settings.integrations.replicate:
+        for network in settings.integrations.replicate.networks:
+            if network.type == cmd_type:
+                return network
+    return None
+
+
 def get_list_of_commands(user_id: int) -> str:
     """
     Return list of commands supported by the bot.

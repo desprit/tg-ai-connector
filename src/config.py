@@ -10,6 +10,7 @@ from . import model
 
 class Config(BaseModel):
     debug: bool = False
+    install_global_handlers: bool = False
     general: model.GeneralSettings
     telegram: model.TelegramSettings
     integrations: model.Integrations
