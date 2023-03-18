@@ -1,7 +1,5 @@
 black
-fastapi
 openai
 pyTelegramBotAPI
 replicate
 toml
-uvicorn

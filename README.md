@@ -25,10 +25,13 @@ pip install -r requirements.txt
 1. OpenAI through [Official API](https://beta.openai.com/docs/introduction)
    - Dall-E
    - ChatGPT
+   - Text Completion
 2. Replicate through [Replicate](https://replicate.com)
    - Midjourney
    - Stable Diffusion
    - Other networks
+
+Relicate offers many different networks. Initially I was only using image generation but recently discovered a [text-to-speech network](https://replicate.com/openai/whisper/api). Since you need to provide an audio to it, the easiest way I found is to use "reply" in your Telegram chat. Basically you select an audio message, reply to it with `/a` command (or whatever command you chose for the `openai/whisper` integration) and optionally provide language, for example `/a de`.
 
 # Usage
 
@@ -67,10 +70,16 @@ allowed_chats = [345, 456] # optional, a list of changes from which all messages
 [integrations.openai]
 api_key = "OPEN_AI_TOKEN" # set it to enable OpenAI integration
 [[integrations.openai.networks]]
-name = "chatgpt"
-command = "p" # Telegram command to trigger ChatGPT requests
+name = "completion"
+version = "text-davinci-003"
+command = "t" # Telegram command to trigger Text Completion requests
 [[integrations.openai.networks]]
-name = "dalle"
+name = "chat"
+version = "gpt-4"
+command = "c" # Telegram command to trigger ChatGPT requests
+[[integrations.openai.networks]]
+name = "image"
+version = "dalle"
 command = "d" # Telegram command to trigger Dall-E requests
 
 [integrations.replicate]
@@ -91,6 +100,10 @@ command = "anything" # Telegram command to trigger requests to cjwbw/anything-v3
 name = "cjwbw/portraitplus"
 version = "629a9fe82c7979c1dab323aedac2c03adaae2e1aecf6be278a51fde0245e20a4"
 command = "portraitplus" # Telegram command to trigger requests to cjwbw/portraitplus
+[[integrations.replicate.networks]]
+name = "openai/whisper"
+version = "e39e354773466b955265e969568deb7da217804d8e771ea8c9cd0cef6591f8bc" # Telegram command to trigger requests to openai/whisper text-to-speech model
+command = "a"
 ```
 
 Explore Replicate [website](https://replicate.com/explore) to find more models.
@@ -122,7 +135,7 @@ make stop
 /help
 ```
 
-ChatGPT stores history of requests which can be manually cleaned using `clear` command.
+ChatGPT and Text Completion stores history of requests which can be manually cleaned using `clear` command.
 
 ```
 /p clear

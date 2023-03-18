@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from typing import Optional, Type
 
 import telebot
 
@@ -91,7 +91,7 @@ def clean_message_from_command(text: str) -> str:
     return text
 
 
-def find_config_by_command(cmd: str) -> Optional[model.Network]:
+def find_config_by_command(cmd: str) -> Optional[Type[model.Network]]:
     """
     Search ReplicateNetworks and OpenAiNetworks for the one that matches the given command.
     """

@@ -6,13 +6,33 @@ from pydantic import BaseModel
 
 @dataclass
 class HistoryEntry:
-    message: str
     timestamp: int
 
 
 @dataclass
-class ChatHistoryEntry(HistoryEntry):
+class CompletionHistoryEntry(HistoryEntry):
+    message: str
     response: str
+
+    @classmethod
+    def from_message(cls, message: str, timestamp: int, response: str):
+        return cls(message=message, response=response, timestamp=timestamp)
+
+
+@dataclass
+class ChatHistoryEntry(HistoryEntry):
+    message: str
+    message_role: str  # "user" or "system"
+    response: str
+
+    @classmethod
+    def from_message(cls, message: str, timestamp: int, response: str):
+        role = "user"
+        if message.lower().startswith("you are"):
+            role = "system"
+        return cls(
+            message=message, message_role=role, response=response, timestamp=timestamp
+        )
 
 
 @dataclass
@@ -28,6 +48,7 @@ class EntitiesResponse:
 class Network(BaseModel):
     name: str
     command: str
+    version: str
 
 
 class OpenAiNetwork(Network):
@@ -40,7 +61,7 @@ class OpenAIIntegration(BaseModel):
 
 
 class ReplicateNetwork(Network):
-    version: str
+    ...
 
 
 class ReplicateIntegration(BaseModel):

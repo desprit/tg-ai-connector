@@ -7,46 +7,70 @@ from . import config
 settings = config.get_settings()
 
 
-class MessagesStore:
+class DialogsStore:
     """
-    Stores whitelisted users, chats and usernames.
+    Stores whitelisted users, dialogs and usernames.
     Data is stored in memory.
     """
 
     __instance = None
     ttl = settings.general.text_history_ttl
     limit = settings.general.text_history_size
-    items: dict[str, list[model.HistoryEntry]]
+    chats: dict[str, list[model.ChatHistoryEntry]]
+    completions: dict[str, list[model.CompletionHistoryEntry]]
 
     def __init__(self):
-        if MessagesStore.__instance is not None:
+        if DialogsStore.__instance is not None:
             raise Exception("This class is a singleton!")
-        self.items = {}
-        MessagesStore.__instance = self
+        self.chats = {}
+        self.completions = {}
+        DialogsStore.__instance = self
 
     @staticmethod
     def get_instance():
-        if MessagesStore.__instance is None:
-            return MessagesStore()
-        return MessagesStore.__instance
+        if DialogsStore.__instance is None:
+            return DialogsStore()
+        return DialogsStore.__instance
 
-    def add(self, key: str, value: model.HistoryEntry):
-        if key not in self.items:
-            self.items[key] = []
-        self.items[key].append(value)
+    def add_to_chats(self, chat_id: str, value: model.ChatHistoryEntry):
+        if chat_id not in self.chats:
+            self.chats[chat_id] = []
+        self.chats[chat_id].append(value)
 
-    def get(self, key: str) -> list[model.HistoryEntry]:
-        return self.items.get(key, [])
+    def add_to_completions(self, chat_id: str, value: model.CompletionHistoryEntry):
+        if chat_id not in self.completions:
+            self.completions[chat_id] = []
+        self.completions[chat_id].append(value)
 
-    def clean_old_items(self, key: str):
+    def get_from_chats(self, chat_id: str) -> list[model.ChatHistoryEntry]:
+        return self.chats.get(chat_id, [])
+
+    def get_from_completions(self, chat_id: str) -> list[model.CompletionHistoryEntry]:
+        return self.completions.get(chat_id, [])
+
+    def clean_old_completions(self, key: str):
+        if key not in self.completions:
+            return
         filtered = []
-        for item in self.get(key):
+        for item in self.completions[key]:
             if item.timestamp > (time.time() - self.ttl):
                 filtered.append(item)
-        return filtered[-self.limit :]
+        self.completions[key] = filtered[-self.limit :]
 
-    def clear(self, key: str):
-        self.items[key] = []
+    def clean_old_chats(self, key: str):
+        if key not in self.chats:
+            return
+        filtered = []
+        for item in self.chats[key]:
+            if item.timestamp > (time.time() - self.ttl):
+                filtered.append(item)
+        self.chats[key] = filtered[-self.limit :]
+
+    def clear_chats(self, chat_id: str):
+        self.chats[chat_id] = []
+
+    def clear_completions(self, chat_id: str):
+        self.completions[chat_id] = []
 
 
 class WhitelistStore:

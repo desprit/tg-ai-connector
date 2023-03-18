@@ -1,4 +1,5 @@
 import re
+import time
 from typing import Tuple
 from typing import Optional
 
@@ -12,31 +13,45 @@ settings = config.get_settings()
 if settings.integrations.openai:
     openai.api_key = settings.integrations.openai.api_key
 
-DALLE_NAME = "dalle"
-CHATGPT_NAME = "chatgpt"
+CHAT_API_NAME = "chat"
+IMAGE_API_NAME = "image"
+COMPLETION_API_NAME = "completion"
 REMOVE_ANSWER_RE = re.compile(r"Answer\d+:")
 
 
-def get_gpt_response(
-    history: list[model.ChatHistoryEntry], text: str
+def send_completion_request(version: str, prompt: str):
+    response = openai.Completion.create(
+        model=version,
+        prompt=prompt,
+        max_tokens=500,
+        temperature=0.2,
+        timeout=10,
+        n=1,
+    )
+    return response
+
+
+def get_completion_response(
+    history: list[model.CompletionHistoryEntry], text: str, cfg: model.OpenAiNetwork
 ) -> Tuple[str, Optional[str]]:
     """
-    Request an answer from Chat GPT-3 model.
+    Request an answer from one of the Text Completion models.
     """
     if not text:
         return "", "No text provided"
-    text = _format_with_context(history, text)
-    try:
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=text,
-            max_tokens=500,
-            temperature=0.9,
-            timeout=10,
-            n=1,
-        )
-    except Exception as e:
-        return "", f"Error while getting response, {e}"
+    text = _format_text_completion_request_with_context(history, text)
+    response = None
+    for _ in range(2):
+        try:
+            response = send_completion_request(cfg.version, text)
+        except openai.error.APIConnectionError:
+            time.sleep(1)
+            continue
+        except Exception as e:
+            return "", f"Error while getting response, {e}"
+        break
+    if not response:
+        return "", "Error while getting response"
     if len(response["choices"]) == 0:
         return "", "Error while getting response, no choices"
     text = response["choices"][0]["text"]
@@ -47,13 +62,60 @@ def get_gpt_response(
     return text, None
 
 
+def send_chat_request(version: str, messages: list[dict]):
+    response = openai.ChatCompletion.create(
+        model=version,
+        messages=messages,
+        max_tokens=500,
+        temperature=0.2,
+        timeout=10,
+        n=1,
+    )
+    return response
+
+
+def get_chat_response(
+    history: list[model.ChatHistoryEntry], text: str, cfg: model.OpenAiNetwork
+) -> Tuple[str, Optional[str]]:
+    """
+    Request an answer from a Chat model.
+    """
+    if not text:
+        return "", "No text provided"
+    messages = _format_chat_request(history, text)
+    response = None
+    for _ in range(2):
+        try:
+            response = send_chat_request(cfg.version, messages)
+        except openai.error.APIConnectionError:
+            time.sleep(1)
+            continue
+        except Exception as e:
+            return "", f"Error while getting response, {e}"
+        break
+    if not response:
+        return "", "Error while getting response"
+    if len(response["choices"]) == 0:
+        return "", "Error while getting response, no choices"
+    text = response["choices"][0]["message"]["content"]
+    return text, None
+
+
 def get_dalle_response(text: str) -> Tuple[str, Optional[str]]:
     if not text:
         return "", "No text provided"
-    try:
-        response = openai.Image.create(prompt=text, n=1, size="1024x1024")
-    except Exception as e:
-        return "", f"Error while getting image: {e}"
+    response = None
+    for _ in range(2):
+        try:
+            response = openai.Image.create(prompt=text, n=1, size="1024x1024")
+        except openai.error.APIConnectionError:
+            time.sleep(1)
+            continue
+        except Exception as e:
+            return "", f"Error while getting image: {e}"
+        break
+    if not response:
+        return "", "Error while getting image: no response"
     if not response or not "data" in response:
         return "", "Error while getting image: no data"
     if len(response["data"]) == 0:
@@ -61,7 +123,9 @@ def get_dalle_response(text: str) -> Tuple[str, Optional[str]]:
     return response["data"][0]["url"], None
 
 
-def _format_with_context(history: list[model.ChatHistoryEntry], text: str) -> str:
+def _format_text_completion_request_with_context(
+    history: list[model.CompletionHistoryEntry], text: str
+) -> str:
     """
     Combine history with new message.
     Example output:
@@ -78,4 +142,25 @@ def _format_with_context(history: list[model.ChatHistoryEntry], text: str) -> st
         result += f"Prompt{i}: {entry.message}\n"
         result += f"Answer{i}: {entry.response}\n"
     result += f"Prompt{len(history) + 1}: {text}\n"
+    return result
+
+
+def _format_chat_request(history: list[model.ChatHistoryEntry], text: str):
+    """
+    Format old messages in the following structure:
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Who won the world series in 2020?"},
+        {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
+        {"role": "user", "content": "Where was it played?"}
+    """
+    role = "user"
+    if text.lower().startswith("you are"):
+        role = "system"
+    if len(history) == 0:
+        return [{"role": role, "content": text}]
+    result = []
+    for entry in history:
+        result.append({"role": entry.message_role, "content": entry.message})
+        result.append({"role": "assistant", "content": entry.response})
+    result.append({"role": role, "content": text})
     return result

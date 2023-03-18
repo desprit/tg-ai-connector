@@ -1,18 +1,21 @@
 import telebot
+import requests
 
 from . import model
 from . import utils
 from . import store
 from . import config
-from .integrations.openai import get_gpt_response
+from .integrations.openai import get_chat_response
 from .integrations.openai import get_dalle_response
-from .integrations.openai import DALLE_NAME, CHATGPT_NAME
-from .integrations.replicate import get_replicate_response
+from .integrations.openai import get_completion_response
+from .integrations.openai import CHAT_API_NAME, IMAGE_API_NAME, COMPLETION_API_NAME
+from .integrations.replicate import get_replicate_audio_response
+from .integrations.replicate import get_replicate_image_response
 
 
 logger = config.logger
 settings = config.get_settings()
-messages_store = store.MessagesStore.get_instance()
+dialogs_store = store.DialogsStore.get_instance()
 whitelist_store = store.WhitelistStore.get_instance()
 
 telebot.apihelper.ENABLE_MIDDLEWARE = True
@@ -77,12 +80,26 @@ def handle_blacklist(m: telebot.types.Message):
 
 def handle_replicate_request(m: telebot.types.Message):
     """
-    Image generation using Replicate API.
+    Image generation and text-to-speech decode using Replicate API.
     Example:
     >>> /m A sunset on the beach
     """
     cfg = utils.find_config_by_command(m.command)
-    response, error = get_replicate_response(m.cleaned, cfg)
+    if not cfg:
+        return bot.reply_to(m, "Unknown command")
+    if m.reply_to_message and m.reply_to_message.voice:
+        file_info = bot.get_file(m.reply_to_message.voice.file_id)
+        file = requests.get(
+            "https://api.telegram.org/file/bot{0}/{1}".format(
+                settings.telegram.bot_token, file_info.file_path
+            )
+        )
+        response, error = get_replicate_audio_response(file.content, m.cleaned, cfg)
+        if error:
+            return bot.reply_to(m, error)
+        bot.reply_to(m, response)
+        return
+    response, error = get_replicate_image_response(m.cleaned, cfg)
     if error:
         return bot.reply_to(m, error)
     bot.send_photo(m.chat.id, response, reply_to_message_id=m.message_id)
@@ -100,28 +117,63 @@ def handle_dalle_request(m: telebot.types.Message):
     bot.send_photo(m.chat.id, response, reply_to_message_id=m.message_id)
 
 
-def handle_chatgpt_request(m: telebot.types.Message):
+def handle_completion_request(m: telebot.types.Message):
     """
-    Conversation handler using OpenAI ChatGPT.
+    Conversation handler using OpenAI text completion models.
     Example:
-    >>> /p What is the meaning of life?
+    >>> /d What is the meaning of life?
     To clean the history:
-    >>> /p clear
+    >>> /d clear
     """
-    unique_id = f"{m.chat.id}:{m.chat.id}"
-    messages_store.clean_old_items(unique_id)
+    unique_id = f"{m.chat.id}:{m.from_user.id}"
+    dialogs_store.clean_old_completions(unique_id)
     if "clear" in m.cleaned:
-        messages_store.clear(unique_id)
+        dialogs_store.clear_completions(unique_id)
         return bot.reply_to(m, "History cleared")
 
-    history = messages_store.get(unique_id)
-    response, error = get_gpt_response(history, m.cleaned)
+    cfg = utils.find_config_by_command(m.command)
+    if not cfg:
+        return bot.reply_to(m, "Unknown command")
+    history = dialogs_store.get_from_completions(unique_id)
+    response, error = get_completion_response(history, m.cleaned, cfg)
     if error:
         return bot.reply_to(m, error)
-    history_entry = model.ChatHistoryEntry(m.cleaned, m.date, response)
-    messages_store.add(unique_id, history_entry)
+    history_entry = model.CompletionHistoryEntry.from_message(
+        m.cleaned, m.date, response
+    )
+    dialogs_store.add_to_completions(unique_id, history_entry)
     bot.reply_to(m, response)
 
+
+def handle_chat_request(m: telebot.types.Message):
+    """
+    Chat handler using OpenAI chat models.
+    Example:
+    >>> /c You are a helpful Twitch moderator
+    To clean the history:
+    >>> /c clear
+    """
+    unique_id = f"{m.chat.id}:{m.from_user.id}"
+    dialogs_store.clean_old_chats(unique_id)
+    if "clear" in m.cleaned:
+        dialogs_store.clear_chats(unique_id)
+        return bot.reply_to(m, "History cleared")
+
+    cfg = utils.find_config_by_command(m.command)
+    if not cfg:
+        return bot.reply_to(m, "Unknown command")
+    history = dialogs_store.get_from_chats(unique_id)
+    response, error = get_chat_response(history, m.cleaned, cfg)
+    if error:
+        return bot.reply_to(m, error)
+    history_entry = model.ChatHistoryEntry.from_message(m.cleaned, m.date, response)
+    dialogs_store.add_to_chats(unique_id, history_entry)
+    bot.reply_to(m, response)
+
+
+"""
+Initialize handlers for integrations listed in configuration file.
+"""
 
 if settings.integrations.replicate:
     networks = settings.integrations.replicate.networks
@@ -133,15 +185,22 @@ if settings.integrations.replicate:
 
 if settings.integrations.openai:
     networks = settings.integrations.openai.networks
-    dalle_cmd = next((n.command for n in networks if n.name == DALLE_NAME), None)
-    if dalle_cmd:
+    image_cmd = next((n.command for n in networks if n.name == IMAGE_API_NAME), None)
+    if image_cmd:
         bot.register_message_handler(
-            handle_dalle_request, commands=[dalle_cmd], is_allowed=True
+            handle_dalle_request, commands=[image_cmd], is_allowed=True
         )
-    chatgpt_cmd = next((n.command for n in networks if n.name == CHATGPT_NAME), None)
-    if chatgpt_cmd:
+    chat_cmd = next((n.command for n in networks if n.name == CHAT_API_NAME), None)
+    if chat_cmd:
         bot.register_message_handler(
-            handle_chatgpt_request, commands=[chatgpt_cmd], is_allowed=True
+            handle_chat_request, commands=[chat_cmd], is_allowed=True
+        )
+    completion_cmd = next(
+        (n.command for n in networks if n.name == COMPLETION_API_NAME), None
+    )
+    if completion_cmd:
+        bot.register_message_handler(
+            handle_completion_request, commands=[completion_cmd], is_allowed=True
         )
 
 

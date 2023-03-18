@@ -25,10 +25,13 @@ pip install -r requirements.txt
 1. OpenAI через [Official API](https://beta.openai.com/docs/introduction)
    - Dall-E
    - ChatGPT
+   - Text Completion
 2. Replicate через [Replicate](https://replicate.com)
    - Midjourney
    - Stable Diffusion
    - Other networks
+
+Relicate предлагает множество разных сеток. Изначально я использовал только генерацию картинок, но недавно обнаружил [конвертацию аудио в текст](https://replicate.com/openai/whisper/api). Так как нужно отправить в эту сетку аудио, самый простой способ - это использовать "reply" в чате Телеграма. Выделяем аудио сообщение, отвечаем на него командой `/a` (или другой командой, которую вы выбрали для интеграции с `openai/whisper`), можно также опционально указать язык распознавания, например `/a de`.
 
 # Использование
 
@@ -67,10 +70,16 @@ allowed_chats = [345, 456] # опционально, список чатов, о
 [integrations.openai]
 api_key = "OPEN_AI_TOKEN" # этот токен включает интеграцию с OpenAI
 [[integrations.openai.networks]]
-name = "chatgpt"
-command = "p" # Telegram команда для взаимодействия с ChatGPT
+name = "completion"
+version = "text-davinci-003"
+command = "t" # Telegram команда для взаимодействия с Text Completion
 [[integrations.openai.networks]]
-name = "dalle"
+name = "chat"
+version = "gpt-4"
+command = "c" # Telegram команда для взаимодействия с ChatGPT
+[[integrations.openai.networks]]
+name = "image"
+version = "dalle"
 command = "d" # Telegram команда для взаимодействия с сеткой Dall-E
 
 [integrations.replicate]
@@ -91,6 +100,9 @@ command = "anything" # Telegram команда для взаимодействи
 name = "cjwbw/portraitplus"
 version = "629a9fe82c7979c1dab323aedac2c03adaae2e1aecf6be278a51fde0245e20a4"
 command = "portraitplus" # Telegram команда для взаимодействия с сеткой cjwbw/portraitplus
+[[integrations.replicate.networks]]
+name = "openai/whisper"
+version = "e39e354773466b955265e969568deb7da217804d8e771ea8c9cd0cef6591f8bc" # Telegram команда для взаимодействия с сеткой openai/whisper для конвертации аудио в текст
 ```
 
 ## Запуск в режиме разработки
@@ -120,7 +132,7 @@ make stop
 /help
 ```
 
-ChatGPT хранит историю запросов, ее можно очистить вручную используя команду `clear`:
+ChatGPT и Text Completion хранит историю запросов, ее можно очистить вручную используя команду `clear`:
 
 ```
 /p clear

@@ -1,4 +1,6 @@
+import io
 import os
+import time
 from typing import Tuple
 from typing import Optional
 
@@ -15,7 +17,7 @@ if settings.integrations.replicate:
     os.environ["REPLICATE_API_TOKEN"] = settings.integrations.replicate.api_key
 
 
-def get_replicate_response(
+def get_replicate_image_response(
     text: str, cfg: model.ReplicateNetwork
 ) -> Tuple[str, Optional[str]]:
     if not text:
@@ -35,13 +37,51 @@ def get_replicate_response(
         "guidance_scale": 7.5,
         "scheduler": "DPMSolverMultistep",
     }
-    try:
-        if settings.debug:
-            logger.debug(f">>> Replicate request: {text}")
-        output = version.predict(**inputs)
-        logger.debug(f">>> Replicate response: {output}")
-    except Exception as e:
-        return "", f"Error while getting image: {e}"
+    output = None
+    for _ in range(2):
+        try:
+            if settings.debug:
+                logger.debug(f">>> Replicate request: {text}")
+            output = version.predict(**inputs)
+            logger.debug(f">>> Replicate response: {output}")
+        except replicate.exceptions.ReplicateError as e:
+            time.sleep(1)
+        except Exception as e:
+            return "", f"Error while getting image: {e}"
+        break
+    if not output:
+        return "", "Error while getting image response"
     if isinstance(output, list):
         return output[0] or "", None
     return output or "", None
+
+
+def get_replicate_audio_response(
+    file_data: bytes, text: str, cfg: model.ReplicateNetwork
+) -> Tuple[str, Optional[str]]:
+    try:
+        model = replicate.models.get(cfg.name)
+        version = model.versions.get(cfg.version)
+    except Exception as e:
+        return "", f"Error while initializing Replicate model: {e}"
+    f = io.BytesIO(file_data)
+    inputs = {"audio": f, "transcription": "plain text"}
+    if len(text) == "2":
+        inputs["language"] = text
+    output = None
+    for _ in range(2):
+        try:
+            if settings.debug:
+                logger.debug(f">>> Replicate audio request")
+            output = version.predict(**inputs)
+            logger.debug(f">>> Replicate response: {output}")
+        except replicate.exceptions.ReplicateError as e:
+            time.sleep(1)
+        except Exception as e:
+            return "", f"Error while getting image: {e}"
+        break
+    if not output:
+        return "", "Error while getting audio response"
+    if not isinstance(output, dict) or "segments" not in output:
+        return "", "Error while getting audio response"
+    return output["segments"][0]["text"] or "", None
