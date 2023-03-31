@@ -72,6 +72,7 @@ allowed_chats = [345, 456] # optional, a list of changes from which all messages
 
 [integrations.openai]
 api_key = "OPEN_AI_TOKEN" # set it to enable OpenAI integration
+max_tokens = 1000 # max tokens to return by OpenAI text models, default 500
 [[integrations.openai.networks]]
 name = "completion"
 version = "text-davinci-003"

@@ -72,6 +72,7 @@ allowed_chats = [345, 456] # опционально, список чатов, о
 
 [integrations.openai]
 api_key = "OPEN_AI_TOKEN" # этот токен включает интеграцию с OpenAI
+max_tokens = 1000 # максимальное количество токенов, возвращаемое текстовыми моделями OpenAI, 500 по умолчанию
 [[integrations.openai.networks]]
 name = "completion"
 version = "text-davinci-003"

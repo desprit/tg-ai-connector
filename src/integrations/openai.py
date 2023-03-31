@@ -23,7 +23,7 @@ def send_completion_request(version: str, prompt: str):
     response = openai.Completion.create(
         model=version,
         prompt=prompt,
-        max_tokens=500,
+        max_tokens=settings.integrations.openai.max_tokens,
         temperature=0.2,
         timeout=10,
         n=1,
@@ -66,7 +66,7 @@ def send_chat_request(version: str, messages: list[dict]):
     response = openai.ChatCompletion.create(
         model=version,
         messages=messages,
-        max_tokens=500,
+        max_tokens=settings.integrations.openai.max_tokens,
         temperature=0.2,
         timeout=10,
         n=1,

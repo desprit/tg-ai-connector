@@ -57,6 +57,7 @@ class OpenAiNetwork(Network):
 
 class OpenAIIntegration(BaseModel):
     api_key: str
+    max_tokens: int = 500
     networks: list[OpenAiNetwork]
 
 
