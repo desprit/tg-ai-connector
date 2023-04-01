@@ -35,39 +35,22 @@ class ChatHistoryEntry(HistoryEntry):
         )
 
 
-@dataclass
-class EntitiesRequest:
-    text: str
-
-
-@dataclass
-class EntitiesResponse:
-    text: str
-
-
 class Network(BaseModel):
     name: str
     command: str
     version: str
-
-
-class OpenAiNetwork(Network):
-    ...
+    type: str
 
 
 class OpenAIIntegration(BaseModel):
     api_key: str
     max_tokens: int = 500
-    networks: list[OpenAiNetwork]
-
-
-class ReplicateNetwork(Network):
-    type: str
+    networks: list[Network]
 
 
 class ReplicateIntegration(BaseModel):
     api_key: str
-    networks: list[ReplicateNetwork]
+    networks: list[Network]
 
 
 class Integrations(BaseModel):
@@ -88,8 +71,4 @@ class GeneralSettings(BaseModel):
 
 
 class ConfigException(Exception):
-    pass
-
-
-class IntegrationException(Exception):
     pass

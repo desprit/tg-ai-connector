@@ -1,5 +1,6 @@
 black
 openai
+pyright
 pyTelegramBotAPI
 replicate
 toml

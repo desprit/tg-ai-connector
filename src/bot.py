@@ -78,7 +78,7 @@ def handle_blacklist(m: telebot.types.Message):
     bot.reply_to(m, f"Removed {entry} from whitelist")
 
 
-def get_audio_file(file_id: str) -> bytes:
+def get_audio_file(file_id: str) -> requests.Response:
     """
     Download audio file from the message.
     """

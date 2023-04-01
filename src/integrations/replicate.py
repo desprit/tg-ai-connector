@@ -4,9 +4,8 @@ import time
 from typing import Tuple
 from typing import Optional
 
-import replicate
-import replicate.version
-import replicate.exceptions
+from replicate.exceptions import ReplicateError
+from replicate import models as replicate_models
 
 from .. import model
 from .. import config
@@ -18,12 +17,12 @@ if settings.integrations.replicate:
 
 
 def get_replicate_image_response(
-    text: str, cfg: model.ReplicateNetwork
+    text: str, cfg: model.Network
 ) -> Tuple[str, Optional[str]]:
     if not text:
         return "", "No text provided"
     try:
-        model = replicate.models.get(cfg.name)
+        model = replicate_models.get(cfg.name)
         version = model.versions.get(cfg.version)
     except Exception as e:
         return "", f"Error while initializing Replicate model: {e}"
@@ -44,7 +43,7 @@ def get_replicate_image_response(
                 logger.debug(f">>> Replicate image request for: {text}")
             output = version.predict(**inputs)
             logger.debug(f">>> Replicate image response: {output}")
-        except replicate.exceptions.ReplicateError as e:
+        except ReplicateError as e:
             time.sleep(1)
         except Exception as e:
             return "", f"Error while getting image: {e}"
@@ -57,10 +56,10 @@ def get_replicate_image_response(
 
 
 def get_replicate_audio_response(
-    file_data: bytes, text: str, cfg: model.ReplicateNetwork
+    file_data: bytes, text: str, cfg: model.Network
 ) -> Tuple[str, Optional[str]]:
     try:
-        model = replicate.models.get(cfg.name)
+        model = replicate_models.get(cfg.name)
         version = model.versions.get(cfg.version)
     except Exception as e:
         return "", f"Error while initializing Replicate model: {e}"
@@ -75,7 +74,7 @@ def get_replicate_audio_response(
                 logger.debug(f">>> Replicate audio request")
             output = version.predict(**inputs)
             logger.debug(f">>> Replicate audio response: {output}")
-        except replicate.exceptions.ReplicateError as e:
+        except ReplicateError as e:
             time.sleep(1)
         except Exception as e:
             return "", f"Error while getting audio: {e}"

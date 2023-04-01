@@ -77,14 +77,17 @@ max_tokens = 1000 # max tokens to return by OpenAI text models, default 500
 name = "completion"
 version = "text-davinci-003"
 command = "t" # Telegram command to trigger Text Completion requests
+type = "text"
 [[integrations.openai.networks]]
 name = "chat"
 version = "gpt-4"
 command = "c" # Telegram command to trigger ChatGPT requests
+type = "text"
 [[integrations.openai.networks]]
 name = "image"
 version = "dalle"
 command = "d" # Telegram command to trigger Dall-E requests
+type = "text"
 
 [integrations.replicate]
 api_key = "REPLICATE_TOKEN" # set it to enable Replicate integration

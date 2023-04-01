@@ -3,11 +3,15 @@ SHELL := /bin/bash
 
 .PHONY: start
 start: ## Start Telegram bot
-	python -m src.bot
+	@python -m src.bot
 
 .PHONY: stop
 stop: ## Stop Telegram bot
-	pkill -9 -f src.bot
+	@pkill -9 -f src.bot
+
+.PHONY: lint
+lint: ## Lint codebase using Pyright
+	@pyright .
 
 .PHONY: help
 help: ## This help dialog

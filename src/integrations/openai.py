@@ -20,6 +20,8 @@ REMOVE_ANSWER_RE = re.compile(r"Answer\d+:")
 
 
 def send_completion_request(version: str, prompt: str):
+    if not settings.integrations.openai:
+        raise Exception("OpenAI integration is not configured")
     response = openai.Completion.create(
         model=version,
         prompt=prompt,
@@ -32,7 +34,7 @@ def send_completion_request(version: str, prompt: str):
 
 
 def get_completion_response(
-    history: list[model.CompletionHistoryEntry], text: str, cfg: model.OpenAiNetwork
+    history: list[model.CompletionHistoryEntry], text: str, cfg: model.Network
 ) -> Tuple[str, Optional[str]]:
     """
     Request an answer from one of the Text Completion models.
@@ -52,9 +54,15 @@ def get_completion_response(
         break
     if not response:
         return "", "Error while getting response"
+    if not isinstance(response, dict) or not "choices" in response:
+        return "", "Error while getting response, no choices"
+    choices = response["choices"]
     if len(response["choices"]) == 0:
         return "", "Error while getting response, no choices"
-    text = response["choices"][0]["text"]
+    choice = choices[0]
+    if not isinstance(choice, dict) or not "text" in choice:
+        return "", "Error while getting response, no text"
+    text = choice["text"]
     # Answer comes in format
     # "AnswerN: Hello...""
     # We need to remove the "AnswerN:" part
@@ -63,6 +71,8 @@ def get_completion_response(
 
 
 def send_chat_request(version: str, messages: list[dict]):
+    if not settings.integrations.openai:
+        raise Exception("OpenAI integration is not configured")
     response = openai.ChatCompletion.create(
         model=version,
         messages=messages,
@@ -75,7 +85,7 @@ def send_chat_request(version: str, messages: list[dict]):
 
 
 def get_chat_response(
-    history: list[model.ChatHistoryEntry], text: str, cfg: model.OpenAiNetwork
+    history: list[model.ChatHistoryEntry], text: str, cfg: model.Network
 ) -> Tuple[str, Optional[str]]:
     """
     Request an answer from a Chat model.
@@ -95,10 +105,18 @@ def get_chat_response(
         break
     if not response:
         return "", "Error while getting response"
-    if len(response["choices"]) == 0:
+    if not isinstance(response, dict) or not "choices" in response:
         return "", "Error while getting response, no choices"
-    text = response["choices"][0]["message"]["content"]
-    return text, None
+    choices = response["choices"]
+    if len(choices) == 0:
+        return "", "Error while getting response, no choices"
+    choice = choices[0]
+    if not isinstance(choice, dict) or not "message" in choice:
+        return "", "Error while getting response, no message"
+    message = choice["message"]
+    if not isinstance(message, dict) or not "content" in message:
+        return "", "Error while getting response, no content"
+    return message["content"], None
 
 
 def get_dalle_response(text: str) -> Tuple[str, Optional[str]]:
@@ -116,11 +134,15 @@ def get_dalle_response(text: str) -> Tuple[str, Optional[str]]:
         break
     if not response:
         return "", "Error while getting image: no response"
-    if not response or not "data" in response:
+    if not isinstance(response, dict) or not "data" in response:
         return "", "Error while getting image: no data"
-    if len(response["data"]) == 0:
+    data = response["data"]
+    if not isinstance(data, list) or len(data) == 0:
         return "", "Error while getting image: data is empty"
-    return response["data"][0]["url"], None
+    value = data[0]
+    if not isinstance(value, dict) or not "url" in value:
+        return "", "Error while getting image: no url"
+    return value["url"], None
 
 
 def _format_text_completion_request_with_context(
