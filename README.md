@@ -4,6 +4,16 @@
 
 # Installation
 
+## Docker
+
+https://hub.docker.com/repository/docker/desprit/tg-ai-connector/general
+
+```sh
+docker run -v /path/to/config.toml:/app/bot/config.toml desprit/tg-ai-connector
+```
+
+## Manual
+
 Python 3.10+ is required.
 
 ```sh

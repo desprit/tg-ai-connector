@@ -25,6 +25,8 @@ class Config(BaseModel):
             raise model.ConfigException(
                 f"Commands should only repeat once, but found: {commands}"
             )
+        if self.telegram.bot_token == "TG_BOT_TOKEN":
+            raise model.ConfigException("Please set your bot token in config.toml")
 
 
 @lru_cache()

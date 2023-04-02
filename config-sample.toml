@@ -1,0 +1,47 @@
+debug = true
+
+[general]
+text_history_ttl = 300
+text_history_size = 10
+
+[telegram]
+bot_token = "TG_BOT_TOKEN"
+
+[integrations]
+
+[integrations.openai]
+api_key = "OPENAI_API_KEY"
+max_tokens = 500
+[[integrations.openai.networks]]
+name = "completion"
+version = "text-davinci-003"
+command = "t"
+type = "text"
+[[integrations.openai.networks]]
+name = "chat"
+version = "gpt-4"
+command = "c"
+type = "text"
+[[integrations.openai.networks]]
+name = "image"
+version = "dalle"
+command = "d"
+type = "text"
+
+[integrations.replicate]
+api_key = "REPLICATE_API_KEY"
+[[integrations.replicate.networks]]
+name = "tstramer/midjourney-diffusion"
+version = "436b051ebd8f68d23e83d22de5e198e0995357afef113768c20f0b6fcef23c8b"
+command = "m"
+type = "image"
+[[integrations.replicate.networks]]
+name = "stability-ai/stable-diffusion"
+version = "f178fa7a1ae43a9a9af01b833b9d2ecf97b1bcb0acfd2b1c1c1c1c1c1c1c1c1c"
+command = "s"
+type = "image"
+[[integrations.replicate.networks]]
+name = "openai/whisper"
+version = "e39e354773466b955265e969568deb7da217804d8e771ea8c9cd0cef6591f8bc"
+command = "a"
+type = "audio"
