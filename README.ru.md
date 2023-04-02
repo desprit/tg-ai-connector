@@ -9,7 +9,17 @@
 https://hub.docker.com/repository/docker/desprit/tg-ai-connector/general
 
 ```sh
-docker run -v /path/to/config.toml:/app/bot/config.toml desprit/tg-ai-connector
+# Если у вас Linux
+docker run -d --rm -v /path/to/config.toml:/app/bot/config.toml desprit/tg-ai-connector:1.0.0
+# Если у вас MacOS M1
+docker run -d --rm -v /path/to/config.toml:/app/bot/config.toml --platform linux/amd64 desprit/tg-ai-connector:1.0.0
+```
+
+Если нужно, используйте лог файл с хоста и пробросьте его в контейнер:
+
+```sh
+docker run -v /path/to/config.toml:/app/bot/config.toml -v /path/to/log.txt:/app/bot/log.txt desprit/tg-ai-connector:1.0.0
+tail -f /path/to/log.txt
 ```
 
 ## Ручками
