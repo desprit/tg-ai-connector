@@ -9,16 +9,35 @@
 https://hub.docker.com/repository/docker/desprit/tg-ai-connector/general
 
 ```sh
+# Создайте файл, в котором будут чаты и пользователи, которым разрешено общаться с ботом
+touch /path/to/whitelist.txt
+
 # Если у вас Linux
-docker run -d --rm -v /path/to/config.toml:/app/bot/config.toml desprit/tg-ai-connector:1.0.0
+docker run -d --rm \
+   -v /path/to/config.toml:/app/bot/config.toml \
+   -v /path/to/whitelist.txt:/app/bot/whitelist.txt \
+   desprit/tg-ai-connector:1.0.0
+
 # Если у вас MacOS M1
-docker run -d --rm -v /path/to/config.toml:/app/bot/config.toml --platform linux/amd64 desprit/tg-ai-connector:1.0.0
+docker run -d --rm \
+   --platform linux/amd64 \
+   -v /path/to/config.toml:/app/bot/config.toml \
+   -v /path/to/whitelist.txt:/app/bot/whitelist.txt \
+   desprit/tg-ai-connector:1.0.0
 ```
 
 Если нужно, используйте лог файл с хоста и пробросьте его в контейнер:
 
 ```sh
-docker run -v /path/to/config.toml:/app/bot/config.toml -v /path/to/log.txt:/app/bot/log.txt desprit/tg-ai-connector:1.0.0
+# Создайте лог-файл
+touch /path/to/log.txt
+
+docker run \
+   -v /path/to/config.toml:/app/bot/config.toml \
+   -v /path/to/whitelist.txt:/app/bot/whitelist.txt \
+   -v /path/to/log.txt:/app/bot/log.txt \
+   desprit/tg-ai-connector:1.0.0
+
 tail -f /path/to/log.txt
 ```
 

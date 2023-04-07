@@ -9,16 +9,35 @@
 https://hub.docker.com/repository/docker/desprit/tg-ai-connector/general
 
 ```sh
+# Create file to store whitelisted chats and users
+touch /path/to/whitelist.txt
+
 # If you're on Linux
-docker run -d --rm -v /path/to/config.toml:/app/bot/config.toml desprit/tg-ai-connector:1.0.0
+docker run -d --rm \
+   -v /path/to/config.toml:/app/bot/config.toml \
+   -v /path/to/whitelist.txt:/app/bot/whitelist.txt \
+   desprit/tg-ai-connector:1.0.0
+
 # If you're on MacOS M1
-docker run -d --rm -v /path/to/config.toml:/app/bot/config.toml --platform linux/amd64 desprit/tg-ai-connector:1.0.0
+docker run -d --rm \
+   --platform linux/amd64 \
+   -v /path/to/config.toml:/app/bot/config.toml \
+   -v /path/to/whitelist.txt:/app/bot/whitelist.txt \
+   desprit/tg-ai-connector:1.0.0
 ```
 
 Map log file from the host to the container if needed:
 
 ```sh
-docker run -v /path/to/config.toml:/app/bot/config.toml -v /path/to/log.txt:/app/bot/log.txt desprit/tg-ai-connector:1.0.0
+# Create log file
+touch /path/to/log.txt
+
+docker run \
+   -v /path/to/config.toml:/app/bot/config.toml \
+   -v /path/to/whitelist.txt:/app/bot/whitelist.txt \
+   -v /path/to/log.txt:/app/bot/log.txt \
+   desprit/tg-ai-connector:1.0.0
+
 tail -f /path/to/log.txt
 ```
 
