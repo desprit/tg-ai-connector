@@ -141,7 +141,7 @@ def handle_completion_request(m: telebot.types.Message):
     """
     unique_id = f"{m.chat.id}:{m.from_user.id}"
     dialogs_store.clean_old_completions(unique_id)
-    if "clear" in m.cleaned:
+    if m.cleaned.startswith("clear"):
         dialogs_store.clear_completions(unique_id)
         return bot.reply_to(m, "History cleared")
 
@@ -169,7 +169,7 @@ def handle_chat_request(m: telebot.types.Message):
     """
     unique_id = f"{m.chat.id}:{m.from_user.id}"
     dialogs_store.clean_old_chats(unique_id)
-    if "clear" in m.cleaned:
+    if m.cleaned.startswith("clear"):
         dialogs_store.clear_chats(unique_id)
         return bot.reply_to(m, "History cleared")
 
