@@ -26,8 +26,9 @@ class ChatHistoryEntry(HistoryEntry):
     response: str
 
     @classmethod
-    def from_message(cls, message: str, timestamp: int, response: str):
-        role = "user"
+    def from_message(
+        cls, message: str, timestamp: int, response: str, role: str = "user"
+    ):
         if message.lower().startswith("you are"):
             role = "system"
         return cls(

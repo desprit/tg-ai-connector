@@ -1,4 +1,5 @@
 import re
+import time
 from typing import Optional
 
 import telebot
@@ -106,6 +107,21 @@ def find_config_by_command(cmd: str) -> Optional[model.Network]:
     return None
 
 
+def find_config_by_name(name: str) -> Optional[model.Network]:
+    """
+    Search ReplicateNetworks and OpenAiNetworks for the one that matches the given name.
+    """
+    if settings.integrations.replicate:
+        for network in settings.integrations.replicate.networks:
+            if network.name == name:
+                return network
+    if settings.integrations.openai:
+        for network in settings.integrations.openai.networks:
+            if network.name == name:
+                return network
+    return None
+
+
 def find_config_by_type(cmd_type: str) -> Optional[model.Network]:
     """
     Search ReplicateNetworks and OpenAiNetworks for the one that matches the given type.
@@ -145,3 +161,17 @@ def get_list_of_commands(user_id: int) -> str:
                 [network.command, f"Send request to OpenAI API network {network.name}"]
             )
     return "".join(f"<code>/{cmd}</code> - {desc}\n" for cmd, desc in commands)
+
+
+def add_conversations_flow(
+    history: list[model.ChatHistoryEntry],
+) -> list[model.ChatHistoryEntry]:
+    """
+    The idea behind this function is to add a ChatGPT System Message to the
+    collection of messages to instruct ChatGPT to act as a person in conversations.
+    """
+    system_message = model.ChatHistoryEntry.from_message(
+        settings.conversation_system_message, int(time.time()), "", role="system"
+    )
+    history = [system_message, *history]
+    return history

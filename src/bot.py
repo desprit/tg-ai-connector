@@ -1,3 +1,5 @@
+import random
+
 import telebot
 import requests
 
@@ -206,6 +208,41 @@ def handle_voice_message(m: telebot.types.Message):
     bot.edit_message_text(response, chat_id=m.chat.id, message_id=msg.id)
 
 
+def handle_text_message(m: telebot.types.Message):
+    """
+    This handler is capable of intercepting all text messages coming into the chat.
+    Should not get triggered if message starts with a command.
+    """
+    # if m.from_user.id == m.chat.id:
+    #     return
+    if m.text and m.text.startswith("/"):
+        return
+    cfg = utils.find_config_by_name("chat")
+    if not cfg:
+        return bot.reply_to(m, "Chat network not found")
+    unique_id = f"{m.chat.id}:conversation"
+    dialogs_store.clean_old_chats(unique_id)
+    history = dialogs_store.get_from_chats(unique_id)
+    message = m.cleaned
+    if m.from_user.first_name:
+        message = f"{m.from_user.username}: {message}"
+    if len(history) < 5:
+        history_entry = model.ChatHistoryEntry.from_message(message, m.date, "")
+        dialogs_store.add_to_chats(unique_id, history_entry)
+        return
+    if random.random() < 0.85:
+        return
+    history = utils.add_conversations_flow(history)
+    response, error = get_chat_response(history, message, cfg)
+    if error:
+        return bot.reply_to(m, error)
+    if not response.startswith("AI: "):
+        response = f"AI: {response}"
+    history_entry = model.ChatHistoryEntry.from_message(response, m.date, "")
+    dialogs_store.add_to_chats(unique_id, history_entry)
+    bot.reply_to(m, response.lstrip("AI: "))
+
+
 """
 Initialize handlers for integrations listed in configuration file.
 """
@@ -245,6 +282,7 @@ Register global handlers.
 
 if settings.install_global_handlers:
     bot.register_message_handler(handle_voice_message, content_types=["voice"])
+    bot.register_message_handler(handle_text_message, content_types=["text"])
 
 
 logger.info(">>> Started polling")

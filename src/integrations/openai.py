@@ -183,6 +183,7 @@ def _format_chat_request(history: list[model.ChatHistoryEntry], text: str):
     result = []
     for entry in history:
         result.append({"role": entry.message_role, "content": entry.message})
-        result.append({"role": "assistant", "content": entry.response})
+        if entry.response:
+            result.append({"role": "assistant", "content": entry.response})
     result.append({"role": role, "content": text})
     return result

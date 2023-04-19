@@ -11,6 +11,9 @@ from . import model
 class Config(BaseModel):
     debug: bool = False
     install_global_handlers: bool = False
+    conversation_system_message: str = (
+        "Behave as a real person interacting with human users in a Telegram chat"
+    )
     general: model.GeneralSettings
     telegram: model.TelegramSettings
     integrations: model.Integrations
