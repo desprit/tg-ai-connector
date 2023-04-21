@@ -213,8 +213,8 @@ def handle_text_message(m: telebot.types.Message):
     This handler is capable of intercepting all text messages coming into the chat.
     Should not get triggered if message starts with a command.
     """
-    # if m.from_user.id == m.chat.id:
-    #     return
+    if m.from_user.id == m.chat.id:
+        return
     if m.text and m.text.startswith("/"):
         return
     cfg = utils.find_config_by_name("chat")
@@ -223,21 +223,16 @@ def handle_text_message(m: telebot.types.Message):
     unique_id = f"{m.chat.id}:conversation"
     dialogs_store.clean_old_chats(unique_id)
     history = dialogs_store.get_from_chats(unique_id)
-    message = m.cleaned
-    if m.from_user.first_name:
-        message = f"{m.from_user.username}: {message}"
     if len(history) < 5:
-        history_entry = model.ChatHistoryEntry.from_message(message, m.date, "")
+        history_entry = model.ChatHistoryEntry.from_message(m.cleaned, m.date, "")
         dialogs_store.add_to_chats(unique_id, history_entry)
         return
-    if random.random() < 0.85:
+    if random.random() < 0.90:
         return
     history = utils.add_conversations_flow(history)
-    response, error = get_chat_response(history, message, cfg)
+    response, error = get_chat_response(history, m.cleaned, cfg)
     if error:
         return bot.reply_to(m, error)
-    if not response.startswith("AI: "):
-        response = f"AI: {response}"
     history_entry = model.ChatHistoryEntry.from_message(response, m.date, "")
     dialogs_store.add_to_chats(unique_id, history_entry)
     bot.reply_to(m, response.lstrip("AI: "))

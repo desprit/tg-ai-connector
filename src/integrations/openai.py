@@ -54,13 +54,13 @@ def get_completion_response(
         break
     if not response:
         return "", "Error while getting response"
-    if not isinstance(response, dict) or not "choices" in response:
+    if not isinstance(response, dict) or "choices" not in response:
         return "", "Error while getting response, no choices"
     choices = response["choices"]
     if len(response["choices"]) == 0:
         return "", "Error while getting response, no choices"
     choice = choices[0]
-    if not isinstance(choice, dict) or not "text" in choice:
+    if not isinstance(choice, dict) or "text" not in choice:
         return "", "Error while getting response, no text"
     text = choice["text"]
     # Answer comes in format
@@ -105,16 +105,16 @@ def get_chat_response(
         break
     if not response:
         return "", "Error while getting response"
-    if not isinstance(response, dict) or not "choices" in response:
+    if not isinstance(response, dict) or "choices" not in response:
         return "", "Error while getting response, no choices"
     choices = response["choices"]
     if len(choices) == 0:
         return "", "Error while getting response, no choices"
     choice = choices[0]
-    if not isinstance(choice, dict) or not "message" in choice:
+    if not isinstance(choice, dict) or "message" not in choice:
         return "", "Error while getting response, no message"
     message = choice["message"]
-    if not isinstance(message, dict) or not "content" in message:
+    if not isinstance(message, dict) or "content" not in message:
         return "", "Error while getting response, no content"
     return message["content"], None
 
@@ -134,13 +134,13 @@ def get_dalle_response(text: str) -> Tuple[str, Optional[str]]:
         break
     if not response:
         return "", "Error while getting image: no response"
-    if not isinstance(response, dict) or not "data" in response:
+    if not isinstance(response, dict) or "data" not in response:
         return "", "Error while getting image: no data"
     data = response["data"]
     if not isinstance(data, list) or len(data) == 0:
         return "", "Error while getting image: data is empty"
     value = data[0]
-    if not isinstance(value, dict) or not "url" in value:
+    if not isinstance(value, dict) or "url" not in value:
         return "", "Error while getting image: no url"
     return value["url"], None
 
