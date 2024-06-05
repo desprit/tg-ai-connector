@@ -158,7 +158,11 @@ def handle_completion_request(m: telebot.types.Message):
         m.cleaned, m.date, response
     )
     dialogs_store.add_to_completions(unique_id, history_entry)
-    bot.reply_to(m, response)
+    if len(response) > 4095:
+        for x in range(0, len(response), 4095):
+            bot.reply_to(m, text=response[x:x+4095])
+    else:
+        bot.reply_to(m, text=response)
 
 
 def handle_chat_request(m: telebot.types.Message):
